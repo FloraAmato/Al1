@@ -1,0 +1,173 @@
+@page "{DisputeId?}"
+@using System.Globalization
+@using CreaProject.Helpers
+@model CreaProject.Pages.Disputes.Bids
+
+@{
+    ViewData["Title"] = "Bids";
+    var currentCulture = CultureInfo.CreateSpecificCulture("fr-FR");
+}
+
+<div class="flex h-full w-full flex-col items-center justify-center mt-14">
+    <div class="flex w-4/5 justify-center mb-6">
+        @Html.Partial("_Breadcrumb", BreadcrumbHelper.GetBreadcrumbSteps(Model.Dispute.Status, Model.Dispute.DisputeId))
+    </div>
+    <div class="h-2/3 w-4/5 p-12 mb-10 flex ">
+        <div class="w-1/2 h-full flex flex-col mr-4">
+            <h1 class="text-2xl mb-2">@Model.Dispute.Name</h1>
+            <p class="mb-2">Resolution method : @Model.Dispute.ResolutionMethod</p>
+            @if (@Model.Dispute.ResolutionMethod == DisputeResolutionMethod.Bids)
+            {
+                <p class="text-xs">in the following form you have to express your utility for each disputed good through a bid value</p>
+            }
+            else
+            {
+                <p class="text-xs">in the following form you have to express your utility for each disputed good through a five stars rating</p>
+            }
+            <div class="flex-col flex w-full mt-8">
+                @foreach (var agent in Model.Dispute.Agents)
+                {   
+                    <div class="h-[48px] min-h-[48px] mb-4 flex w-4/5 items-center justify-between rounded-2xl bg-white px-6 py-3 shadow-xl">
+                        <p>@(string.IsNullOrWhiteSpace(agent.Name) ? agent.Email : agent.Name)</p>
+                        <div class="flex h-full items-center">
+                            @if (@agent.Validated == ValidatedSteps.Bids)
+                            {
+                                <i class="fa-solid fa-circle-check fa-lg text-creablue"></i>
+                            }
+                            else
+                            {
+                                <i class="fa-solid fa-circle-check fa-lg text-gray-300"></i>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="w-1/2 min-w-[700px] h-full flex shadow-xl rounded-2xl flex-col ml-4 p-6 mt-20">
+            <form method="post" asp-page-handler="SaveBids" id="bids-validation">
+                <div class="overflow-y-auto w-full p-4">
+                    @if (Model.Dispute.ResolutionMethod == DisputeResolutionMethod.Bids)
+                    {
+                        @foreach (var agentBid in Model.AgentBids)
+                        {
+                        <div class="h-[48px] min-h-[48px] mb-4 flex w-full items-center justify-between rounded-2xl bg-white px-6 py-3 shadow-md">
+                            <p>@agentBid.Good.Name</p>
+                            <div class="flex h-full items-center">
+                                <span class="min-w-[84px] flex justify-end whitespace-nowrap">@agentBid.Good.EstimatedValue.ToString("C0", currentCulture)</span>
+                                <div class="mx-4 h-full border border-gray-300"></div>
+                                <div class="flex w-full items-center">
+                                    <input type="hidden" name="AgentBids.Index" value="@agentBid.Id"/>
+                                    <input type="hidden" name="AgentBids[@agentBid.Id].Id" value="@agentBid.Id" />
+                                    <div class="min-h-[36px] flex items-center justify-center rounded-l-xl bg-gray-300 px-2 bound-div">
+                                        <span class="text-xs font-medium whitespace-nowrap">
+                                            @agentBid.LowerBound.ToString("C0", currentCulture) <text>&lt;</text>
+                                        </span>
+                                    </div>
+                                    <input class="min-h-[36px] w-[120px] input-percentage bg-gray-100 pl-4" type="number" name="AgentBids[@agentBid.Id].BidValue" min="@agentBid.LowerBound" max="@agentBid.UpperBound" step="1" value="@Math.Round(agentBid.BidValue, 0)"/>
+                                    <div class="min-h-[36px] flex items-center justify-center rounded-r-xl bg-gray-300 px-2 bound-div">
+                                        <span class="text-xs font-medium whitespace-nowrap">
+                                            <text>&lt;</text> @agentBid.UpperBound.ToString("C0", currentCulture)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        }
+                    }
+                    else
+                    {
+                        @foreach (var agentRate in Model.AgentRates) 
+                        {
+                        <div class="h-[48px] min-h-[48px] mb-4 flex w-full items-center justify-between rounded-2xl bg-white px-6 py-3 shadow-md">
+                            <p>@agentRate.Good.Name</p>
+                            <div class="flex h-full items-center">
+                                <span class="min-w-[84px] flex justify-end whitespace-nowrap">@agentRate.Good.EstimatedValue.ToString("C0", currentCulture)</span>
+                                <div class="mx-4 h-full border border-gray-300"></div>
+                                <div class="flex w-full items-center">
+                                    <input type="hidden" name="AgentRates.Index" value="@agentRate.Id"/>
+                                    <input type="hidden" name="AgentRates[@agentRate.Id].Id" value="@agentRate.Id" />
+                                    <div class="rating">
+                                        @for (int j = 1; j <= 5; j++)
+                                        {
+                                            <input type="radio" name="stars-rating-@agentRate.Id" class="mask mask-star-2 bg-orange-400" value="@j" @(agentRate.RateValue == j ? "checked" : "") data-rate-index="@agentRate.Id"/>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="rateValue_@agentRate.Id" name="AgentRates[@agentRate.Id].RateValue" value="@agentRate.RateValue"/>
+                        }
+                    }
+                </div>
+                <div class="self-end">
+                    @if (Model.IsCurrentStep && Model.CurrentAgent.Validated == ValidatedSteps.Setup)
+                    {
+                        <input type="hidden" name="Validating" id="Validating" value="false" />
+                        <button type="submit" class="outlined-button">Save and quit</button>
+                        <button type="button" class="button" onclick="$('#Validating').val('true');validate_bids_confirmation.showModal()">Validate</button>
+                    }
+                  @*   else if (Model.IsCurrentStep && Model.CurrentAgent.Validated == ValidatedSteps.Bids)
+                    {
+                        <input type="hidden" id="Validating" value="false" />
+                        <button type="submit" class="button">Unvalidate</button>
+                    } *@
+                    else
+                    {
+                        <button class="disabled-button" disabled>Save and quit</button>
+                        <button class="disabled-button" disabled>Validate</button>
+                    }
+
+                </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+
+<dialog id="validate_bids_confirmation" class="modal">
+    <div class="modal-box bg-white px-10">
+        <div class="mb-2 mt-8 flex text-center">
+            <h3 class="text-lg font-bold">Are you sure you have entered all your preferences ?</h3>
+            <form method="dialog">
+                <button class="absolute right-6 top-6 border-none">
+                    <i class="fa-solid fa-xmark fa-sm text-creablue"></i>
+                </button>
+            </form>
+        </div>
+        <p class="text-center">If you continue, you will not be able to make any further changes.</p>
+        <div class="flex justify-center items-center mt-8">
+            <form method="dialog">
+                <button class="outlined-button w-[128px] h-[36px] mr-2" onclick="$('#Validating').val('false')">Cancel</button>
+                <button class="button w-[128px] h-[36px]" form="bids-validation">Continue</button>
+            </form>
+        </div>
+    </div>
+</dialog>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const boundDivs = document.querySelectorAll('.bound-div');
+            let maxWidth = 0;
+
+            boundDivs.forEach(function(div) {
+                const width = div.offsetWidth;
+                if (width > maxWidth) {
+                    maxWidth = width;
+                }
+            });
+
+            boundDivs.forEach(function(div) {
+                div.style.width = maxWidth + 'px';
+            });
+
+            const radioButtons = document.querySelectorAll('.mask-star-2');
+            radioButtons.forEach((radio) => {
+                radio.addEventListener('change', function() {
+                    const rateIndex = this.getAttribute('data-rate-index');
+                    document.getElementById(`rateValue_${rateIndex}`).value = this.value;
+                });
+            });
+        });
+    </script>
+}

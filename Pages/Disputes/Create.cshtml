@@ -1,0 +1,570 @@
+﻿@page "{DisputeId?}"
+@using System.Globalization
+@using CreaProject.Helpers
+@model CreaProject.Pages.Disputes.CreateModel
+
+@{
+    ViewData["Title"] = "Create";
+    CultureInfo currentCulture = CultureInfo.CreateSpecificCulture("fr-FR");
+}
+
+<div class="flex h-full w-full flex-col items-center justify-center mt-14">
+    <div class="flex w-4/5 justify-center mb-6">
+        @Html.Partial("_Breadcrumb", BreadcrumbHelper.GetBreadcrumbSteps(Model.Dispute.Status, Model.Dispute.DisputeId))
+    </div>
+    <div class="h-2/3 w-4/5 rounded-2xl p-12 shadow-xl mb-10">
+        <form method="post" id="saveDisputeForm" class="flex h-full w-full flex-col" asp-page-handler="SaveDispute">
+            <input type="hidden" id="ShoudGoToDashboard" name="ShoudGoToDashboard" />
+            <div asp-validation-summary="ModelOnly" class="text-red-500"></div>
+            <div class="mb-8 flex w-full items-center justify-between">
+                <label asp-for="Dispute.Name" class="form-label min-w-[170px] mr-4"></label>
+                <div class="flex w-full flex-col">
+                    <input asp-for="Dispute.Name" class="input-form" />
+                    <span asp-validation-for="Dispute.Name" class="text-red-500"></span>
+                </div>
+            </div>
+            <div class="mb-8 flex">
+                <label asp-for="Dispute.ResolutionMethod" class="form-label min-w-[170px] mr-4"></label>
+                <div class="flex flex-col">
+                    <div class="mb-4 flex items-center text-sm font-medium">
+                        <input type="radio" asp-for="Dispute.ResolutionMethod" value="@DisputeResolutionMethod.Ratings" id="rating-input" class="mr-2 crea-radio" />
+                        <span class="icon-tooltip">
+                            Ratings
+                            <div class="tooltip" data-tip="In the following form you have to express your utility for each disputed good through a five stars rating">
+                                <i class="fa-solid fa-info-circle fa-xs align-super text-creablue"></i>
+                            </div>
+                        </span>
+                    </div>
+                    <div class="mb-4 flex items-center text-sm font-medium">
+                        <input type="radio" asp-for="Dispute.ResolutionMethod" value="@DisputeResolutionMethod.Bids" id="bid-input" class="mr-2 crea-radio" />
+                        <span class="icon-tooltip">
+                            Bids
+                            <div class="tooltip" data-tip="In the following form you have to express your utility for each disputed good through bids">
+                                <i class="fa-solid fa-info-circle fa-xs align-super text-creablue"></i>
+                            </div>
+                            <span class="tooltip-text"></span>
+                        </span>
+                    </div>
+                    <span asp-validation-for="Dispute.ResolutionMethod" class="text-red-500"></span>
+                </div>
+            </div>
+            <div class="mb-8 flex items-center justify-between">
+                <div class="flex items-center justify-between w-full" id="bids-section" style="display: none">
+                    <label asp-for="Dispute.BoundsPercentage" class="form-label min-w-[170px] mr-4"></label>
+                    <div class="flex w-full flex-col">
+                        <div class="flex w-full items-center">
+                            <div class="min-h-[36px] min-w-[54px] flex items-center rounded-l-xl bg-gray-300 px-2">
+                            <span class="text-xs font-medium">
+                                0% <text>&lt;</text>
+                            </span>
+                            </div>
+                            <input asp-for="Dispute.BoundsPercentage" value="@Model.Dispute.BoundsPercentage" class="min-h-[36px] input-percentage w-full bg-gray-100 pl-4" placeholder="10" type="number" min="0" max="25" step="0.1" />
+                            <div class="min-h-[36px] min-w-[54px] flex items-center rounded-r-xl bg-gray-300 px-2">
+                            <span class="text-xs font-medium">
+                                <text>⩽</text> 25%
+                            </span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Dispute.BoundsPercentage" class="text-red-500"></span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between w-full" id="ratings-section" style="display: none">
+                    <label asp-for="Dispute.RatingWeight" class="form-label min-w-[170px] mr-4"></label>
+                    <div class="flex w-full flex-col">
+                        <div class="flex w-full items-center">
+                            <div class="min-h-[36px] min-w-[54px] flex items-center rounded-l-xl bg-gray-300 px-2">
+                            <span class="text-xs font-medium">
+                                0% <text>&lt;</text>
+                            </span>
+                            </div>
+                            <input asp-for="Dispute.RatingWeight" id="ratingWeightInput" value="@((int)Model.Dispute.RatingWeight)" class="min-h-[36px] input-percentage w-full bg-gray-100 pl-4" type="number" placeholder="10" min="0" max="25" step="1" />
+                            <div class="min-h-[36px] min-w-[54px] flex items-center rounded-r-xl bg-gray-300 px-2">
+                            <span class="text-xs font-medium">
+                                <text>⩽</text> 25%
+                            </span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Dispute.RatingWeight" class="text-red-500"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex w-full grow items-start justify-between mb-8">
+                <div class="flex w-1/2 flex-col items-center justify-center">
+                    @if (Model.IsCurrentStep)
+                    {
+                        <div class="h-[80px] border-2 bg-gray-500/10 mb-8 flex w-5/6 cursor-pointer flex-col items-center justify-center rounded-2xl border-dashed border-creablue hover:bg-gray-500/20" onclick="add_agent_modal.showModal()">
+                            <i class="fa-solid fa-plus fa-lg text-creablue"></i>
+                            <p class="mt-4 text-xs font-medium text-creablue">Add new agent</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="h-[80px] border-2 bg-gray-500/10 mb-8 flex w-5/6 flex-col items-center justify-center rounded-2xl border-dashed border-creablue">
+                            <i class="fa-solid fa-plus fa-lg text-creablue"></i>
+                            <p class="mt-4 text-xs font-medium text-creablue">Add new agent</p>
+                        </div>
+                    }
+                    <div class="flex min-h-[200px] h-full w-full grow flex-col items-center overflow-y-auto py-4">
+                        @{
+                            var agentIndex = 0;
+                        }
+                        @foreach (var agent in Model.Dispute.Agents)
+                        {
+                            <input type="hidden" name="AgentId" value="@agent.AgentId"/>
+                            <div class="h-[48px] min-h-[48px] mb-4 flex w-4/5 items-center justify-between rounded-2xl bg-white px-6 py-3 shadow-xl">
+                                <p>@(!string.IsNullOrWhiteSpace(agent.Name) ? agent.Name  : agent.Email)</p>
+                                <div class="flex h-full items-center">
+                                    @if (@agent.Validated == ValidatedSteps.Setup)
+                                    {
+                                        <i class="fa-solid fa-circle-check fa-lg text-creablue"></i>
+                                        <div class="mx-4 h-full border border-gray-300"></div>
+                                        <button type="button" class="mr-2" disabled>
+                                            <i class="fa-regular fa-pen-to-square fa-lg text-gray-300"></i>
+                                        </button>
+                                        <button type="button" disabled>
+                                            <i class="fa-solid fa-trash fa-lg text-gray-300"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <i class="fa-solid fa-circle-check fa-lg text-gray-300"></i>
+                                        <div class="mx-4 h-full border border-gray-300"></div>
+                                        @if (Model.IsCurrentStep)
+                                        {
+                                            <button type="button" class="mr-2" onclick="editAgent(@agent.AgentId, '@agent.Email', '@agent.ShareOfEntitlement')">
+                                                <i class="fa-regular fa-pen-to-square fa-lg text-creablue"></i>
+                                            </button>
+                                            <button type="button" onclick="deleteAgent(@agent.AgentId)">
+                                                <i class="fa-solid fa-trash fa-lg text-creablue"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="mr-2" disabled>
+                                                <i class="fa-regular fa-pen-to-square fa-lg text-gray-400"></i>
+                                            </button>
+                                            <button type="button" disabled>
+                                                <i class="fa-solid fa-trash fa-lg text-gray-400"></i>
+                                            </button>
+                                        }
+
+                                    }
+
+                                </div>
+                            </div>
+                            agentIndex++;
+                        }
+                    </div>
+                </div>
+                <div class="border-l-2 h-full w-0 border-solid border-gray-100"></div>
+                <div class="flex w-1/2 flex-col items-center justify-center">
+                    @if (Model.IsCurrentStep)
+                    {
+                        <div class="h-[80px] mb-8 border-2 bg-gray-500/10 flex w-5/6 cursor-pointer flex-col items-center justify-center rounded-2xl border-dashed border-creablue hover:bg-gray-500/20" onclick="add_good_modal.showModal()">
+                            <i class="fa-solid fa-plus fa-lg text-creablue"></i>
+                            <p class="mt-4 text-xs font-medium text-creablue">Add new good</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="h-[80px] mb-8 border-2 bg-gray-500/10 flex w-5/6 flex-col items-center justify-center rounded-2xl border-dashed border-creablue">
+                            <i class="fa-solid fa-plus fa-lg text-creablue"></i>
+                            <p class="mt-4 text-xs font-medium text-creablue">Add new good</p>
+                        </div>
+                    }
+                    <div class="flex h-full w-full grow flex-col items-center overflow-y-auto py-4 max-h-[200px]">
+                        @{
+                            var goodIndex = 0;
+                        }
+                        @foreach (var good in Model.Dispute.Goods)
+                        {
+                            <input type="hidden" name="GoodId" value="@good.GoodId"/>
+                            <input type="hidden" id="good-isIndivisible-@good.GoodId" value="@good.Indivisible.ToString()"/>
+                            <div class="h-[48px] min-h-[48px] mb-4 flex w-4/5 items-center justify-between rounded-2xl bg-white px-6 py-3 shadow-xl">
+                                <p>@good.Name</p>
+                                <div class="flex h-full items-center">
+                                    <span>@good.EstimatedValue.ToString("C0", currentCulture)</span>
+                                    <div class="mx-4 h-full border border-gray-300"></div>
+                                    @if (Model.IsCurrentStep)
+                                    {
+                                        <button type="button" class="mr-2" onclick="editGood(@good.GoodId, '@good.Name', @good.EstimatedValue)">
+                                            <i class="fa-regular fa-pen-to-square fa-lg text-creablue"></i>
+                                        </button>
+                                        <button type="button" onclick="deleteGood(@good.GoodId)">
+                                            <i class="fa-solid fa-trash fa-lg text-creablue"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="mr-2" disabled>
+                                            <i class="fa-regular fa-pen-to-square fa-lg text-gray-400"></i>
+                                        </button>
+                                        <button type="button" disabled>
+                                            <i class="fa-solid fa-trash fa-lg text-gray-400"></i>
+                                        </button>
+                                    }
+
+                                </div>
+                            </div>
+                            goodIndex++;
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="form-group self-end">
+                @if (Model.IsCurrentStep)
+                {
+                    <button class="outlined-button" type="submit" onclick="document.getElementById('ShoudGoToDashboard').value = 'true';">Save and quit</button>
+                    @if (Model.Dispute.Agents.Count > 1 && Model.Dispute.Goods.Count > 1)
+                    {
+                        @if (Model.CurrentAgent.Validated == ValidatedSteps.Setup)
+                        {
+                            <div class="tooltip" data-tip="To move on to the next step, all agents must validate their contribution.">
+                                <button class="disabled-button" disabled>Validate</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <button form="validate-dispute-form" type="submit" class="button">Validate</button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="tooltip" data-tip="You must have at least two agents and two properties to be able to validate.">
+                            <button class="disabled-button" disabled>Validate</button>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <button class="disabled-button" disabled>Save and quit</button>
+                    <button class="disabled-button" disabled>Validate</button>
+                }
+
+            </div>
+        </form>
+    </div>
+
+    <form id="delete-agent-form" method="post" asp-page-handler="DeleteAgent" onsubmit="saveFirstAsync(event)">
+        <input type="hidden" name="AgentId" id="delete-agent-id" />
+    </form>
+
+    <form id="delete-good-form" method="post" asp-page-handler="DeleteGood" onsubmit="saveFirstAsync(event)">
+        <input type="hidden" name="GoodId" id="delete-good-id" />
+    </form>
+    
+    <form id="validate-dispute-form" method="post" asp-page-handler="ValidateDispute" onsubmit="saveFirstAsync(event)"></form>
+
+    <dialog id="add_agent_modal" class="modal">
+        <div class="modal-box bg-white px-16">
+            <div class="mb-10 flex">
+                <h3 class="text-lg font-bold">Add new agent</h3>
+                <form method="dialog">
+                    <button class="absolute right-4 top-4 border-none">
+                        <i class="fa-solid fa-xmark fa-sm text-creablue"></i>
+                    </button>
+                </form>
+            </div>
+            <div class="flex w-full items-center justify-center">
+                <form id="new-agent-form" method="post" class="w-5/6" asp-page-handler="AddAgent" onsubmit="saveFirstAsync(event)">
+                    <div class="mb-8 flex w-full flex-col items-center justify-between">
+                        <label class="form-label min-w-[170px] mr-4 self-start" for="name">
+                            Name
+                            <div class="tooltip tooltip-right" data-tip="The name of a new agent corresponds to their current or future account name">
+                                <i class="fa-solid fa-info-circle fa-xs align-super text-creablue"></i>
+                            </div>
+                        </label>
+                        <div class="flex w-full flex-col">
+                            <input type="text" class="disabled-input-form" name="name" id="name" disabled />
+                        </div>
+                    </div>
+                    <div class="mb-8 flex w-full flex-col items-center justify-between">
+                        <label asp-for="Agent.Email" class="form-label min-w-[170px] mr-4 self-start"></label>
+                        <div class="flex w-full flex-col">
+                            <input id="agent-email" type="email" asp-for="Agent.Email" class="input-form" required/>
+                            <span asp-validation-for="Agent.Email" class="text-red-500"></span>
+                        </div>
+                    </div>
+                    <div class="mb-16 flex flex-col items-center justify-between">
+                        <label asp-for="Agent.ShareOfEntitlement" class="form-label min-w-[170px] mr-4 self-start">
+                            Share of entitlement
+                            <div class="tooltip" data-tip="Leave empty if it is equally divided among the agents">
+                                <i class="fa-solid fa-info-circle fa-xs align-super text-creablue"></i>
+                            </div>
+                        </label>
+                        <div class="flex w-full flex-col">
+                            <div class="flex w-full items-center">
+                                <div class="min-h-[36px] min-w-[52px] flex items-center rounded-l-xl bg-gray-300 px-2">
+                                    <span class="text-xs font-medium">
+                                        0% <text>&lt;</text>
+                                    </span>
+                                </div>
+                                <input asp-for="Agent.ShareOfEntitlement" class="min-h-[36px] input-percentage w-full bg-gray-100 pl-4" type="number" min="0" max="100" step="1"/>
+                                <div class="min-h-[36px] min-w-[56px] flex items-center rounded-r-xl bg-gray-300 px-2">
+                                    <span class="text-xs font-medium">
+                                        <text>&lt;</text> 100%
+                                    </span>
+                                </div>
+                            </div>
+                            <span asp-validation-for="Agent.ShareOfEntitlement" class="text-red-500"></span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="flex items-center justify-center">
+                <form method="dialog">
+                    <button class="outlined-button w-[128px] h-[36px]">Cancel</button>
+                    <button class="button w-[128px] h-[36px]" type="submit" form="new-agent-form" >Add</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="edit_agent_modal" class="modal">
+        <div class="modal-box bg-white px-16">
+            <div class="mb-10 flex">
+                <h3 class="text-lg font-bold">Edit agent information</h3>
+                <form method="dialog">
+                    <button class="absolute right-4 top-4 border-none">
+                        <i class="fa-solid fa-xmark fa-sm text-creablue"></i>
+                    </button>
+                </form>
+            </div>
+            <div class="flex w-full items-center justify-center">
+                <form id="edit-agent-form" method="post" class="w-5/6" asp-page-handler="EditAgent" onsubmit="saveFirstAsync(event)">
+                    <input asp-for="Agent.AgentId" type="hidden" name="AgentId" id="edit-agent-id" />
+                    <div class="mb-8 flex w-full flex-col items-center justify-between">
+                        <label asp-for="Agent.Email" class="form-label min-w-[170px] mr-4 self-start"></label>
+                        <div class="flex w-full flex-col">
+                            <input id="edit-agent-email" type="email" asp-for="Agent.Email" class="input-form" required />
+                            <span asp-validation-for="Agent.Email" class="text-red-500"></span>
+                        </div>
+                    </div>
+                    <div class="mb-16 flex flex-col items-center justify-between">
+                        <label asp-for="Agent.ShareOfEntitlement" class="form-label min-w-[170px] mr-4 self-start"></label>
+                        <div class="flex w-full flex-col">
+                            <div class="flex w-full items-center">
+                                <div class="min-h-[36px] min-w-[52px] flex items-center rounded-l-xl bg-gray-300 px-2">
+                                    <span class="text-xs font-medium">
+                                        0% <text>&lt;</text>
+                                    </span>
+                                </div>
+                                <input id="edit-agent-shareOfEntitlement" asp-for="Agent.ShareOfEntitlement" class="min-h-[36px] input-percentage w-full bg-gray-100 pl-4" type="number" min="0" max="100" step="1" />
+                                <div class="min-h-[36px] min-w-[56px] flex items-center rounded-r-xl bg-gray-300 px-2">
+                                    <span class="text-xs font-medium">
+                                        <text>&lt;</text> 100%
+                                    </span>
+                                </div>
+                            </div>
+                            <span asp-validation-for="Agent.ShareOfEntitlement" class="text-red-500"></span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="flex items-center justify-center">
+                <form method="dialog">
+                    <button class="outlined-button w-[128px] h-[36px]">Cancel</button>
+                    <button class="button w-[128px] h-[36px]" type="submit" form="edit-agent-form" onsubmit="saveFirstAsync()">Save</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="add_good_modal" class="modal">
+        <div class="modal-box bg-white px-16">
+            <div class="mb-10 flex">
+                <h3 class="text-lg font-bold">Add new good</h3>
+                <form method="dialog">
+                    <button class="absolute right-4 top-4 border-none">
+                        <i class="fa-solid fa-xmark fa-sm text-creablue"></i>
+                    </button>
+                </form>
+            </div>
+            <div class="flex w-full items-center justify-center">
+                <form id="new-good-form" method="post" class="w-5/6" asp-page-handler="AddGood" onsubmit="saveFirstAsync(event)">
+                    <div class="mb-8 flex w-full flex-col items-center justify-between">
+                        <label asp-for="Good.Name" class="form-label min-w-[170px] mr-4 self-start"></label>
+                        <div class="flex w-full flex-col">
+                            <input id="good-name" type="text" asp-for="Good.Name" class="input-form" required />
+                            <span asp-validation-for="Good.Name" class="text-red-500"></span>
+                        </div>
+                    </div>
+                    <div class="mb-8 flex flex-col items-center justify-between">
+                        <label asp-for="Good.EstimatedValue" class="form-label min-w-[170px] mr-4 self-start"></label>
+                        <div class="flex w-full flex-col">
+                            <div class="flex w-full items-center">
+                                <div class="min-h-[36px] min-w-[40px] flex items-center justify-center rounded-l-xl bg-gray-300 px-2">
+                                    <span class="text-xs font-medium">€</span>
+                                </div>
+                                <input asp-for="Good.EstimatedValue" class="min-h-[36px] input-percentage w-full bg-gray-100 pl-4 rounded-r-xl" type="number" min="0" step="1" />
+                            </div>
+                            <span asp-validation-for="Good.EstimatedValue" class="text-red-500"></span>
+                        </div>
+                    </div>
+                    <div class="mb-16 flex">
+                        <input asp-for="Good.Indivisible" type="checkbox" class="mr-4" />
+                        <label asp-for="Good.Indivisible"></label>
+                    </div>
+                </form>
+            </div>
+            <div class="flex items-center justify-center">
+                <form method="dialog">
+                    <button class="outlined-button w-[128px] h-[36px]">Cancel</button>
+                    <button class="button w-[128px] h-[36px]" type="submit" form="new-good-form" onsubmit="saveFirstAsync()">Add</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="edit_good_modal" class="modal">
+        <div class="modal-box bg-white px-16">
+            <div class="mb-10 flex">
+                <h3 class="text-lg font-bold">Edit good</h3>
+                <form method="dialog">
+                    <button class="absolute right-4 top-4 border-none">
+                        <i class="fa-solid fa-xmark fa-sm text-creablue"></i>
+                    </button>
+                </form>
+            </div>
+            <div class="flex w-full items-center justify-center">
+                <form id="edit-good-form" method="post" class="w-5/6" asp-page-handler="EditGood" onsubmit="saveFirstAsync(event)">
+                    <input asp-for="Good.GoodId" type="hidden" name="GoodId" id="edit-good-id" />
+                    <div class="mb-8 flex w-full flex-col items-center justify-between">
+                        <label asp-for="Good.Name" class="form-label min-w-[170px] mr-4 self-start"></label>
+                        <div class="flex w-full flex-col">
+                            <input id="edit-good-name" type="text" asp-for="Good.Name" class="input-form" required/>
+                            <span asp-validation-for="Good.Name" class="text-red-500"></span>
+                        </div>
+                    </div>
+                    <div class="mb-8 flex flex-col items-center justify-between">
+                        <label asp-for="Good.EstimatedValue" class="form-label min-w-[170px] mr-4 self-start"></label>
+                        <div class="flex w-full flex-col">
+                            <div class="flex w-full items-center">
+                                <div class="min-h-[36px] min-w-[40px] flex items-center justify-center rounded-l-xl bg-gray-300 px-2">
+                                    <span class="text-xs font-medium">€</span>
+                                </div>
+                                <input id="edit-good-estimatedValue" asp-for="Good.EstimatedValue" class="min-h-[36px] input-percentage w-full bg-gray-100 pl-4 rounded-r-xl" type="number" min="0" step="1" />
+                            </div>
+                            <span asp-validation-for="Good.EstimatedValue" class="text-red-500"></span>
+                        </div>
+                    </div>
+                    <div class="mb-16 flex">
+                        <input id="edit-good-isIndivisible" asp-for="Good.Indivisible" type="checkbox" class="mr-4"/>
+                        <label asp-for="Good.Indivisible"></label>
+                    </div>
+                </form>
+            </div>
+            <div class="flex items-center justify-center">
+                <form method="dialog">
+                    <button class="outlined-button w-[128px] h-[36px]">Cancel</button>
+                    <button class="button w-[128px] h-[36px]" type="submit" form="edit-good-form" onsubmit="saveFirstAsync()">Edit</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+
+        const saveFirstAsync = (e) => {
+            e.preventDefault();
+            let currentForm = e.target;
+            let form1 = $('#saveDisputeForm');
+            $.ajax({
+                url: form1.attr('action'),  // URL définie dans l'attribut action du formulaire
+                method: form1.attr('method'), // Méthode définie dans le formulaire (GET ou POST)
+                data: form1.serialize(), // Sérialise les données du formulaire
+                success: function (response) {
+                    currentForm.submit();
+                },
+                error: function (error) {
+                    currentForm.submit();
+                }
+            });
+            
+           
+        }
+
+        const deleteAgent = (agentId) => {
+            const deleteForm = document.getElementById("delete-agent-form");
+            const agentIdInput = document.getElementById("delete-agent-id");
+            agentIdInput.value = agentId;
+
+            let form1 = $('#saveDisputeForm');
+            $.ajax({
+                url: form1.attr('action'),  // URL définie dans l'attribut action du formulaire
+                method: form1.attr('method'), // Méthode définie dans le formulaire (GET ou POST)
+                data: form1.serialize(), // Sérialise les données du formulaire
+                success: function (response) {
+                    deleteForm.submit();
+                },
+                error: function (error) {
+                    deleteForm.submit();
+                }
+            });
+         
+        }
+
+        const editAgent = (agentId, agentEmail, agentShare) => {
+            document.getElementById("edit-agent-id").value = agentId;
+            document.getElementById("edit-agent-email").value = agentEmail;
+            document.getElementById("edit-agent-shareOfEntitlement").value = agentShare;
+            const editAgentModal = document.getElementById("edit_agent_modal");
+            editAgentModal.showModal();
+        }
+        
+        const deleteGood = (goodId) => {
+            const deleteGoodForm = document.getElementById("delete-good-form");
+            const goodIdInput = document.getElementById("delete-good-id");
+            goodIdInput.value = goodId;
+            let form1 = $('#saveDisputeForm');
+            $.ajax({
+                url: form1.attr('action'),  // URL définie dans l'attribut action du formulaire
+                method: form1.attr('method'), // Méthode définie dans le formulaire (GET ou POST)
+                data: form1.serialize(), // Sérialise les données du formulaire
+                success: function (response) {
+                    deleteGoodForm.submit();
+                },
+                error: function (error) {
+                    deleteGoodForm.submit();
+                }
+            });
+            
+        }
+        
+        const editGood = (goodId, goodName, goodEstimatedValue) => {
+            const goodIsIndivisible = document.getElementById(`good-isIndivisible-${goodId}`).value;
+            document.getElementById("edit-good-id").value = goodId;
+            document.getElementById("edit-good-name").value = goodName;
+            document.getElementById("edit-good-estimatedValue").value = goodEstimatedValue;
+            document.getElementById("edit-good-isIndivisible").checked = goodIsIndivisible === "True";
+            const editGoodModal = document.getElementById("edit_good_modal");
+            editGoodModal.showModal();
+        }
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            const bidsRadio = document.getElementById("bid-input")
+            const ratingsRadio = document.getElementById("rating-input")
+            const bidsSection = document.getElementById("bids-section");
+            const ratingsSection = document.getElementById("ratings-section");
+            
+
+            const toggleSections = () => {
+                if (bidsRadio.checked) {
+                    bidsSection.style.display = "flex";
+                    ratingsSection.style.display = "none";
+                } else if (ratingsRadio.checked) {
+                    bidsSection.style.display = "none";
+                    ratingsSection.style.display = "flex";
+                }
+            };
+
+            bidsRadio.addEventListener("change", toggleSections);
+            ratingsRadio.addEventListener("change", toggleSections);
+
+            toggleSections();
+        });
+    </script>
+}

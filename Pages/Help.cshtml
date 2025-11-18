@@ -1,0 +1,266 @@
+@page
+@model CreaProject.Pages.Help
+
+<div class="flex h-full w-full items-center justify-center">
+    <div class="w-4/5 flex flex-col my-20">
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-creablue">Help - Frequently Asked Questions</h2>
+            <p>If you have more questions, you can download our detailed <a href="" about="_blank">handbook</a> or <a href="mailto:crea_project@proton.me">contact us</a> directly</p>
+        </div>
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-4">General</h3>
+            <div class="flex">
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>What is CREA ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mt-4">
+                        CREA2 is an innovative project that builds on previous work to help people and businesses resolve disputes using advanced technology. It introduces AI-driven tools and game-theoretical algorithms to guide users through the dispute resolution process step-by-step. CREA2 aims to simplify access to justice across different EU countries by creating a common set of rights and leveraging smart technologies like blockchain and AI chatbots. This platform is designed to make resolving civil disputes easier, more efficient, and fairer for everyone involved.
+
+                        During a dispute resolution on CREA2, you are required to invite the different parties involved in the dispute, then add the goods and their valuations. Once this information is provided, you will be able to set your preference for each of the goods. Finally, the resolution algorithm will propose an equitable distribution of the goods.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-4">User account</h3>
+            <div class="flex flex-col">
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>How do I create an account on CREA ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        To create an account on CREA2, click on the "GO to CREA Solution" button. You will be asked to login to your account. To register as a new user, click on “Create your account now” underneath the login form.
+
+                        Fill in your personal details, such as your first name, last name, email address, and password. Follow the on-screen instructions to complete the registration process.
+
+                        Once registered, you can log in with your e-mail adress and your password and start using the platform.
+                    </p>
+                </div>
+                <hr class="my-4"/>
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>I've received an e-mail to join a dispute. How do I accept the invitation ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        If you have received an email invitation to join a dispute, open the email and click on the provided link. This will take you to the CREA2 platform.
+
+                        If you already have an account, log in using your credentials. If you don't have an account, you'll need to create one by following the registration process (See previous question).
+
+                        Once logged in, you will be able to view and accept the dispute invitation.
+                    </p>
+                </div>
+                <hr class="my-4"/>
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>Can I edit my account information on CREA ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        Yes, you can edit your account information on CREA2.
+                        To do this, log in to your account and navigate to the user management section by clicking on your profile or account settings.
+                        Here, you can update your personal information, such as your first name and last name, by clicking the "Edit" button, making the necessary changes, and then saving them. You can also change your password in this section.
+                    </p>
+                </div>
+                <hr class="my-4"/>
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>Can I delete my account on CREA ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        Yes, you can delete your account on CREA2. However, please note that your account cannot be deleted during an on-going dispute.
+
+                        To delete your account, go to the user management section of your profile. Click on the "Delete Account" button, which will open a confirmation dialog. Read the warning message carefully, and if you are sure you want to proceed, click the "Confirm" button to permanently delete your account. Note that this action is irreversible and will remove all your data from the system.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-4">Disputes</h3>
+            <div class="flex flex-col">
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>What is a dispute ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        A dispute on CREA2 refers to a procedure between agents that aims to solve a legal conflict on asset division. CREA2 facilitates the resolution process by guiding users through a structured, step-by-step approach using advanced AI-driven tools and innovative game-theoretical algorithms. This ensures that all parties can reach a fair and efficient resolution, tailored to their specific needs and preferences.
+                    </p>
+                </div>
+                <hr class="my-4"/>
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>What are the resolution methods "Bids"and "Rates" ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        The resolution methods "Bids" and "Rates" are two ways to express preferences for resolving a dispute on CREA2:
+
+                        Bids Method: Users are given a virtual amount of money to distribute across the goods involved in the dispute, expressing their preferences through monetary bids.
+                        Rates Method: Users rate each good on a 5-star scale, indicating their preferences by assigning a value from 1 to 5 stars.
+                    </p>
+                </div>
+                <hr class="my-4"/>
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>How do I invite agents to join a dispute ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        To invite agents to join a dispute on CREA2, follow these steps:
+
+                        Start by setting up your dispute and navigate to the agent section.
+                        Click the "Add New Agent" button.
+                        Fill in the required details for the agent, including their name, email address, share of entitlement, and optional role.
+                        Submit the information to add the agent to your dispute.
+                    </p>
+                </div>
+                <hr class="my-4"/>
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>How can i add goods to a dispute ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        To add goods to a dispute on CREA2, follow these steps:
+
+                        During the dispute setup process, navigate to the goods section.
+                        Click the "Add New Good" button.
+                        Enter the necessary details for the good, such as the name, estimated value, and optional indivisibility.
+                        Submit the information to add the good to your dispute.
+                    </p>
+                </div>
+                <hr class="my-4"/>
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>What are agent preferences ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        Agent preferences on CREA2 refer to the individual priorities or utilities that agents assign to the goods involved in the dispute. These preferences are set using the method chosen in the initial dispute setup (either "Bids" or "Rates"). Agents allocate their virtual money or rate the goods to indicate their importance or value.
+                    </p>
+                </div>
+                <hr class="my-4"/>
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>How does CREA provide a solution to my dispute ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        CREA2 provides a solution to your dispute by analyzing the preferences submitted by all agents using advanced AI and game-theoretical algorithms. The platform then generates a proposed allocation of goods that aims to satisfy the preferences of all parties involved as fairly as possible.
+                    </p>
+                </div>
+                <hr class="my-4"/>
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>What happens once all agents agree on the proposed solution ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        Once all agents agree on the proposed solution, CREA2 finalizes the resolution process.
+                        A download button becomes available, allowing users to download the report and proof of resolution. This document serves as a certified agreement between the parties, ensuring that the resolution is formally recognized, since it is based on Smart-contract Blockchain technology (WP4).
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-4">Assistance during a dispute</h3>
+            <div class="flex flex-col">
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>What is the videoconference feature on CREA ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        During a dispute, CREA2 provides you with the possibility to create a videoconference meeting between you, agents and/or mediators. To create a meeting, follow these steps:
+
+                        While navigating the dispute process, click on the “videoconference” button at the bottom of your screen.
+                        Pick the date and time for the meeting.
+                        (Optional) Select a mediator from the mediators’ list to join the meeting. You can click on every mediator name if you need more information.
+                        (Optional) Select one or multiple agents to add the meeting.
+                        Click on “Send invitation” send the meeting request.
+                    </p>
+                </div>
+                <hr class="my-4"/>
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>I can't invite an agent to the videoconference. Is this normal ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        Please note that an agent can’t be added to your invitation if they have not joined the dispute and validated the first step.
+                        Once this is done, you will be able to select the agent from the agents’ list.
+                    </p>
+                </div>
+                <hr class="my-4"/>
+                <div class="flex flex-col items-center w-full min-h-[60px] justify-center ellipsed-div">
+                    <div class="flex w-full justify-between items-center">
+                        <h3>How can the chatbot help me during a dispute ?</h3>
+                        <button type="button" onclick="toggleText(this)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="w-full text-gray-400 text-sm mx-4">
+                        The chatbot on CREA2 is designed to assist you by providing expert answers to your legal questions throughout the dispute resolution process. Here's how it can help:
+
+                        Legal Guidance: The chatbot can offer explanations and advice on various legal matters relevant to your dispute, helping you understand your rights and obligations.
+                        Procedure Clarification: It can clarify procedural steps, ensuring you know what to expect and how to proceed at each stage of the dispute resolution process.
+                        Document Assistance: If you need help with legal documents, the chatbot can provide information on how to prepare and submit them correctly.
+                        Regulation Insights: The chatbot can inform you about specific regulations and laws that apply to your dispute, ensuring you are aware of the legal framework governing your case.
+                        Terminology Explanation: It can explain complex legal terms and jargon, making it easier for you to comprehend the legal aspects of your dispute.
+
+                        By providing reliable and accurate legal information, the chatbot ensures that you are well-informed and better prepared to navigate the dispute resolution process on CREA2.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const toggleText = (button) => {
+        const parentDiv = button.parentNode.parentNode;
+
+        if (parentDiv.classList.contains("ellipsed-div")) {
+            parentDiv.classList.remove("ellipsed-div");
+            parentDiv.classList.add("full-div");
+            button.innerHTML = "<i class='fa-solid fa-minus'></i>";
+        } else {
+            parentDiv.classList.remove("full-div");
+            parentDiv.classList.add("ellipsed-div");
+            button.innerHTML = "<i class='fa-solid fa-plus'></i>";
+        }
+    }
+</script>

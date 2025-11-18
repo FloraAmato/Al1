@@ -1,0 +1,93 @@
+﻿@using CreaProject.Areas.Identity.Data
+@inject SignInManager<CreaUser> SignInManager
+
+@{
+    string currentController = (string)Context.Request.RouteValues["page"];
+    string id = (string)Context.Request.RouteValues["DisputeId"];
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CREA Project</title>
+    <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/fontawesome-all.css" />
+    <link rel="stylesheet" href="~/css/splide.min.css" />
+    <link rel="stylesheet" href="~/css/air-datepicker.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.2/jquery.toast.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="icon" type="image/png" sizes="32x32" href="@Url.Content("~/img/favicons/favicon-32x32.png")" />
+    <link rel="icon" type="image/png" sizes="16x16" href="@Url.Content("~/img/favicons/favicon-16x16.png")" />
+</head>
+<body style="min-height: 100vh;" class="text-[#0D243A] flex flex-col bg-white">
+    <header class="z-10 flex items-center justify-center bg-white px-16 py-7 text-sm shadow-md max-md:px-5">
+        <nav class="flex w-full items-center justify-between gap-5 max-md:flex-wrap max-md:max-w-full">
+            @await Html.PartialAsync("_LoginPartial")
+        </nav>
+    </header>
+    <div class="grow flex justify-center items-center">
+        <partial name="_CookieConsentPartial" />
+        <main role="main" class="grow flex justify-center items-center">
+            @RenderBody()
+        </main>
+    </div>
+    @if (!SignInManager.IsSignedIn(User))
+    {
+        <footer class="bg-opacity-10 flex w-full flex-col items-center justify-center bg-slate-800 px-16 py-6 text-center text-xs text-slate-800 text-opacity-70">
+            <div class="flex items-center justify-center">
+                <a href="http://linkedin.com/in/dike-research-group-332440253" target="_blank">
+                    <img src="~/img/linkedin.png" alt="linkedin icon" class="w-[28px] mr-4" />
+                </a>
+                <a href="https://www.vub.be/nl" target="_blank">
+                    <img src="~/img/vub-icon.svg" alt="vub icon" class="w-[32px] mr-4" />
+                </a>
+                <span class="text-black text-2xl mr-4">•</span>
+                <a href="/LegalTerms" class="underline hover:text-creablue text-black">Legal Terms</a>
+            </div>
+            <p class="w-[700px] mt-6">Co-funded by the European Union, under the Call: JUST-2023-JCOO, Project: 101138437. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union. Neither the European Union nor the granting authority can be held responsible for them.</p>
+        </footer>
+    }
+    else
+    {
+        <footer class="flex w-full justify-end items-center bg-white py-12 relative">
+            <div class="absolute flex justify-end items-end w-full bottom-0 pb-[40px]">
+                @if (currentController.Contains("Disputes") && id is not null)
+                {
+                    if (int.TryParse(id, out int disputeId))
+                    {
+                        @await Component.InvokeAsync("VideoConf", new { disputeId = disputeId })
+                    }
+                }
+                @await Html.PartialAsync("_ChatBot")
+            </div>
+        </footer>
+    }
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.2/jquery.toast.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://kit.fontawesome.com/768f8379d1.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        $('#send-invite').on('submit', function (event) {
+            event.preventDefault(); // Empêche la soumission classique
+
+            // Envoie les données du formulaire via AJAX
+            $.ajax({
+                url: $(this).attr('action'),  // URL définie dans l'attribut action du formulaire
+                method: $(this).attr('method'), // Méthode définie dans le formulaire (GET ou POST)
+                data: $(this).serialize(), // Sérialise les données du formulaire
+                success: function (response) {
+                    // Code à exécuter après que le formulaire soit soumis avec succès
+                    $("#visio_modal").close();
+                }
+                error: function (error) {
+                    // Gestion des erreurs lors de la soumission
+                    $("#visio_modal").close();
+                }
+            });
+        });
+
+    </script>
+    @RenderSection("Scripts", false)
+</body>
+</html>

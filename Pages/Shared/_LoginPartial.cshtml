@@ -1,0 +1,62 @@
+﻿@using CreaProject.Areas.Identity.Data
+@inject SignInManager<CreaUser> SignInManager
+@inject UserManager<CreaUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    CreaUser user = await UserManager.GetUserAsync(User);
+    <div class="flex justify-center items-center">
+        <a href="/Disputes">
+            <img src="~/img/icon.svg" alt="CREA2 Icon" class="shrink-0 w-[42px] aspect-square self-stretch"/>
+        </a>
+        <a href="/Help" class="ml-8">
+            <button type="button" class="outlined-button">Help</button>
+        </a>
+    </div>
+    <ul class="navbar-nav">
+        <div class="flex">
+            @if (user != null)
+            {
+            <li class="mr-8">
+                <p>@user.Name @user.Surname</p>
+            </li>
+            }
+            <li class="mr-4">
+                <a asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+                    <i class="fa-solid fa-xl fa-gear text-creablue"></i>
+                </a>
+            </li>
+            <li class="mr-4">
+                <a href="/LegalTerms" title="Legal Terms">
+                    <i class="fa-solid fa-xl fa-scale-balanced text-creablue"></i>
+                </a>
+            </li>
+            <li>
+                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new {area = ""})" method="post">
+                    <button type="submit">
+                        <i class="fa-solid fa-xl fa-arrow-right-from-bracket text-creablue"></i>
+                    </button>
+                </form>
+            </li>
+        </div>
+    </ul>
+}
+else
+{
+    <a href="/Index"><img src="~/img/icon.svg" alt="CREA2 Icon" class="shrink-0 w-[42px] aspect-square self-stretch" /></a>
+    <ul class="my-auto flex gap-5 self-stretch text-slate-800" role="list">
+        <li><a asp-page="/Project" class="@(ViewContext.RouteData.Values["Page"].ToString() == "/Project" ? "active-link" : "")">Project</a></li>
+        <li><a asp-page="/Research" class="@(ViewContext.RouteData.Values["Page"].ToString() == "/Research" ? "active-link" : "")">Research Outputs</a></li>
+        <li><a asp-page="/News" class="@(ViewContext.RouteData.Values["Page"].ToString() == "/News" ? "active-link" : "")">News & events</a></li>
+        <li><a asp-page="/Contact" class="@(ViewContext.RouteData.Values["Page"].ToString() == "/Contact" ? "active-link" : "")">Contact</a></li>
+    </ul>
+    <div>
+        <a href="/Help" class="mr-4">
+            <button type="button" class="outlined-button">Help</button>
+        </a>
+        <a asp-area="Identity" asp-page="/Account/Login">
+            <button type="button" onclick="location.href=''" class="button">GO TO CREA SOLUTION</button>
+        </a>
+    </div>
+
+}
