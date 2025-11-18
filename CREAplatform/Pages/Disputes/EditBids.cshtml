@@ -1,0 +1,170 @@
+@page "{id:int}"
+@model CreaProject.Pages.Disputes.EditBidsModel
+@{
+    ViewData["Title"] = "Bid for goods";
+    ViewData["ActivePage"] = ManageDisputeNavPages.Bids;
+    ViewData["DisputeId"] = Model.Dispute.DisputeId;
+}
+
+<h2>Edit Dispute</h2>
+<h4>Bids</h4>
+<hr/>
+
+
+<div class="row">
+    <partial name="_DisputeNavLayout"/>
+    <div class="col-md-9">
+        @if (TempData["BudgetError"] != null)
+        {
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Bidding error</h4>
+                <p>The sum of your bids have to be equal to the total budget!</p>
+            </div>
+        }
+        @if (TempData["BidError"] != null)
+        {
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Bidding error</h4>
+                <p>The value of good "@TempData["BidError"]" has to be in the following range: (@TempData["LowerBound"], @TempData["UpperBound"]).</p>
+            </div>
+        }
+        <div class="card row">
+            <div class="card-header">
+                <h4 class="mr-auto mb-0 pr-3">Bid for the goods</h4>
+            </div>
+            <div class="card-body">
+                <p>
+                    In the following form you have to express your utility for each disputed good through a bid value.
+                    <br />
+                    <strong>Total budget: @string.Format("{0:C}", ViewData["Budget"])</strong>
+                    
+                </p>
+                <p>
+                    <strong>
+                        Bids sum:
+                        <label id="bidsSum">@string.Format("{0:C}", 0)</label>
+                    </strong>
+                </p>
+
+
+                <form method="POST">
+                    <div asp-validation-summary="All"></div>
+
+                    @for (var i = 0; i < Model.AgentBids.Count; i++)
+                    {
+                        <div class="form-row">
+                            <div class="form-group mb-3 mr-3">
+                                <input type="hidden" asp-for="@Model.AgentBids[i].Id" value="@Model.AgentBids[i].Id">
+                                <input type="hidden" asp-for="@Model.AgentBids[i].AgentId" value="@Model.AgentBids[i].AgentId">
+                                <input type="hidden" asp-for="@Model.AgentBids[i].DisputeId" value="@Model.AgentBids[i].DisputeId">
+                                <input type="hidden" asp-for="@Model.AgentBids[i].GoodId" value="@Model.AgentBids[i].GoodId">
+                                <strong>
+                                    <label asp-for="good- @Model.AgentBids[i].GoodId">@Model.AgentBids[i].Good.Name</label>
+                                </strong>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            @string.Format("{0:C}", Model.AgentBids[i].LowerBound) <text>&le;</text>
+                                        </span>
+                                    </div>
+                                    <input asp-for="@Model.AgentBids[i].BidValue" class="form-control bids" onchange="findTotal()"/>
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">
+                                            <text>&le;</text> @string.Format("{0:C}", Model.AgentBids[i].UpperBound)
+                                        </span>
+                                    </div>
+                                </div>
+                                @*<small id="emailHelp" class="form-text text-muted">Estimated value: @string.Format("{0:C}", Model.AgentBids[i].Good.EstimatedValue)</small>*@
+                                <span asp-validation-for="@Model.AgentBids[i].BidValue"></span>
+                            </div>
+                        </div>
+                    }
+                    @if (Model.Dispute.Status.Equals(DisputeStatus.Bidding))
+                    {
+                        <div class="form-row">
+                            <button type="submit" asp-page-handler="SaveBids" class="btn btn-primary">Save bids</button>
+                        </div>
+                    }
+                    
+                </form>
+            </div>
+        </div>
+
+        <br/>
+        @*<div class="card row">
+                <div class="card-header">
+                    <h4 class="mr-auto mb-0 pr-3">Your bids</h4>
+                </div>
+                <div class="card-body">
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Dispute.Goods)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Dispute.Bids[0].BidValue)
+                                </th>
+
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.Dispute.Bids.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => Model.Dispute.Bids[i].Good.Name)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => Model.Dispute.Bids[i].BidValue)
+                                    </td>
+
+                                    <td>
+                                        @if ((await AuthorizationService.AuthorizeAsync(User, Model.Dispute,
+                                           DisputeOperations.Bid)).Succeeded)
+                                        {
+                                            <form method="post">
+                                                <input type="hidden" asp-for="RemoveBidId" value="@Model.Dispute.Bids[i].BidId" />
+                                                <button type="submit" asp-page-handler="RemoveBid" class="btn btn-danger">Remove bid</button>
+                                            </form>
+
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>*@
+
+        <div>
+            <a asp-page="./Index">Back to List</a>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        findTotal();
+    });
+
+    function findTotal() {
+        var arr = document.getElementsByClassName('bids');
+        var tot=0;
+        for(var i=0;i<arr.length;i++){
+            if(parseFloat(arr[i].value.replace(',', '.')))
+                tot += parseFloat(arr[i].value.replace(',', '.'));
+        }
+        document.getElementById('bidsSum').textContent = tot.toFixed(2) + '€';
+    }
+</script>
+}

@@ -1,0 +1,125 @@
+@page "{id:int}"
+@model CreaProject.Pages.Disputes.EditRatesModel
+@{
+    ViewData["Title"] = "Rate for goods";
+    ViewData["ActivePage"] = ManageDisputeNavPages.Rates;
+    ViewData["DisputeId"] = Model.Dispute.DisputeId;
+}
+
+<h2>Edit Dispute</h2>
+<h4>Rates</h4>
+<hr/>
+
+<div class="row">
+    <partial name="_DisputeNavLayout"/>
+    <div class="col-md-9">
+        <div class="card row">
+            <div class="card-header">
+                <h4 class="mr-auto mb-0 pr-3">Rate the goods</h4>
+            </div>
+            <div class="card-body">
+                <p>
+                    In the following form you have to express your utility for each disputed good through a five-stars rating.
+                    <br/>
+                </p>
+                <form method="POST">
+                    <div asp-validation-summary="All"></div>
+
+
+                    @for (var i = 0; i < Model.AgentRates.Count; i++)
+                    {
+                        <div class="form-row">
+                            <div class="form-group mb-3 mr-3">
+                                <input type="hidden" asp-for="@Model.AgentRates[i].Id" value="@Model.AgentRates[i].Id">
+                                <input type="hidden" asp-for="@Model.AgentRates[i].AgentId" value="@Model.AgentRates[i].AgentId">
+                                <input type="hidden" asp-for="@Model.AgentRates[i].DisputeId" value="@Model.AgentRates[i].DisputeId">
+                                <input type="hidden" asp-for="@Model.AgentRates[i].GoodId" value="@Model.AgentRates[i].GoodId">
+                                <strong>
+                                    <label asp-for="good- @Model.AgentRates[i].GoodId">@Model.AgentRates[i].Good.Name</label>
+                                </strong>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">1 <text>&le;</text></span>
+                                    </div>
+                                    <input asp-for="@Model.AgentRates[i].RateValue" class="form-control" />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><text>&le;</text> 5</span>
+                                    </div>
+                                </div>
+                                @*<small id="emailHelp" class="form-text text-muted">Market value: @string.Format("{0:C}", Model.AgentRates[i].Good.EstimatedValue)</small>*@
+                                <span asp-validation-for="@Model.AgentRates[i].RateValue"></span>
+                            </div>
+                        </div>
+                    }
+                        
+                    @if (Model.Dispute.Status.Equals(DisputeStatus.Bidding))
+                    {
+                        <div class="form-row">
+                            <button type="submit" asp-page-handler="SaveRates" class="btn btn-primary">Save rates</button>
+                        </div>
+                    }
+
+                </form>
+            </div>
+        </div>
+
+        <br/>
+        @*<div class="card row">
+                <div class="card-header">
+                    <h4 class="mr-auto mb-0 pr-3">Your rates</h4>
+                </div>
+                <div class="card-body">
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Dispute.Goods)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Dispute.Rates[0].RateValue)
+                                </th>
+
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.Dispute.Rates.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => Model.Dispute.Rates[i].Good.Name)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => Model.Dispute.Rates[i].RateValue)
+                                    </td>
+
+                                    <td>
+                                        @if ((await AuthorizationService.AuthorizeAsync(User, Model.Dispute,
+                                           DisputeOperations.Rate)).Succeeded)
+                                        {
+                                            <form method="post">
+                                                <input type="hidden" asp-for="RemoveRateId" value="@Model.Dispute.Rates[i].RateId" />
+                                                <button type="submit" asp-page-handler="RemoveRate" class="btn btn-danger">Remove rate</button>
+                                            </form>
+
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>*@
+
+        <div>
+            <a asp-page="./Index">Back to List</a>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

@@ -1,0 +1,40 @@
+﻿@model DisputeBasePageModel
+
+
+<div class="col-md-3">
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item">
+            <a class="nav-link @ManageDisputeNavPages.DetailsNavActiveClass(ViewContext)" id="details" href="@ManageDisputeNavPages.DetailsPageUrl(Model.Dispute)"><i class="fas fa-fw fa-info"></i> Details</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @ManageDisputeNavPages.AgentsNavActiveClass(ViewContext)" id="agents" href="@ManageDisputeNavPages.AgentsPageUrl(Model.Dispute)"><i class="fas fa-fw fa-users"></i> Agents</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @ManageDisputeNavPages.GoodsNavActiveClass(ViewContext)" id="Goods" href="@ManageDisputeNavPages.GoodsPageUrl(Model.Dispute)"><i class="fas fa-fw fa-dollar-sign"></i> Goods</a>
+        </li>
+        @if ((Model.Dispute.Status.Equals(DisputeStatus.Bidding) | Model.Dispute.Status.Equals(DisputeStatus.Finalizing)) 
+            && (await AuthorizationService.AuthorizeAsync(User, Model.Dispute, DisputeOperations.Bid)).Succeeded)
+        {
+            @if (Model.Dispute.ResolutionMethod.Equals(DisputeResolutionMethod.Bids))
+            {
+                <li class="nav-item">
+                    <a class="nav-link @ManageDisputeNavPages.BidsNavActiveClass(ViewContext)" id="Bids" href="@ManageDisputeNavPages.BidsPageUrl(Model.Dispute)"><i class="fas fa-fw fa-money-bill-alt"></i> Bids</a>
+                </li>
+            }
+            else if (Model.Dispute.ResolutionMethod.Equals(DisputeResolutionMethod.Ratings))
+            {
+                <li class="nav-item">
+                    <a class="nav-link @ManageDisputeNavPages.RatesNavActiveClass(ViewContext)" id="Ratings" href="@ManageDisputeNavPages.RatesPageUrl(Model.Dispute)"><i class="fas fa-fw fa-star"></i> Rates</a>
+                </li>
+            }
+        }
+        @if (Model.Dispute.Status.Equals(DisputeStatus.Finalizing) && (await AuthorizationService.AuthorizeAsync(User, Model.Dispute,
+            DisputeOperations.Bid)).Succeeded | (await AuthorizationService.AuthorizeAsync(User, Model.Dispute,
+                DisputeOperations.Update)).Succeeded)
+        {
+            <li class="nav-item">
+                <a class="nav-link @ManageDisputeNavPages.SolutionNavActiveClass(ViewContext)" id="Solution" href="@ManageDisputeNavPages.SolutionPageUrl(Model.Dispute)"><i class="fas fa-fw fa-check"></i> Solution</a>
+            </li>
+        }
+    </ul>
+</div>

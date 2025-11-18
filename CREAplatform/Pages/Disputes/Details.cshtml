@@ -1,0 +1,72 @@
+@page "{id:int}"
+@model CreaProject.Pages.Disputes.DetailsModel
+
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Dispute</h4>
+    <hr/>
+    <div class="row">
+        <partial name="_DisputeNavLayout"/>
+        <div class="col-md-6">
+            <dl class="dl-horizontal">
+                <dt>
+                    @Html.DisplayNameFor(model => model.Dispute.Name)
+                </dt>
+                <dd>
+                    @Html.DisplayFor(model => model.Dispute.Name)
+                </dd>
+
+                <dt>
+                    @Html.DisplayNameFor(model => model.Dispute.Status)
+                </dt>
+                <dd>
+                    @Html.DisplayFor(model => model.Dispute.Status)
+                </dd>
+            </dl>
+        </div>
+    </div>
+</div>
+
+@if (Model.Dispute.Status != DisputeStatus.SettingUp)
+{
+    @if ((await AuthorizationService.AuthorizeAsync(
+        User, Model.Dispute, DisputeOperations.Approve)).Succeeded)
+    {
+        <form style="display:inline;" method="post">
+            <input type="hidden" name="id" value="@Model.Dispute.DisputeId"/>
+            <input type="hidden" name="status" value="@DisputeStatus.SettingUp"/>
+            <button type="submit" class="btn btn-xs btn-success">Approve</button>
+        </form>
+    }
+}
+
+@if (Model.Dispute.Status != DisputeStatus.Finalizing)
+{
+    @if ((await AuthorizationService.AuthorizeAsync(
+        User, Model.Dispute, DisputeOperations.Reject)).Succeeded)
+    {
+        <form style="display:inline;" method="post">
+            <input type="hidden" name="id" value="@Model.Dispute.DisputeId"/>
+            <input type="hidden" name="status" value="@DisputeStatus.Finalizing"/>
+            <button type="submit" class="btn btn-xs btn-success">Reject</button>
+        </form>
+    }
+}
+
+<div>
+    @if ((await AuthorizationService.AuthorizeAsync(
+        User, Model.Dispute,
+        DisputeOperations.Update)).Succeeded)
+    {
+        <a asp-page="./Edit" asp-route-id="@Model.Dispute.DisputeId">Edit</a>
+        <text> | </text>
+    }
+    <a asp-page="./Index">Back to List</a>
+</div>
+<!-- </snippet> -->

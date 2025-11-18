@@ -1,0 +1,242 @@
+@page "{id:int}"
+@model CreaProject.Pages.Disputes.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+    ViewData["ActivePage"] = ManageDisputeNavPages.Details;
+}
+
+<h2>Edit Dispute</h2>
+<h4>Details</h4>
+<hr />
+
+<div class="row">
+    <partial name="_DisputeNavLayout" />
+    <div class="col-md-9">
+
+        <div class="d-flex w-100 justify-content-between">
+            <div>
+                <h3 class="mr-auto mb-0 pr-3">@Model.Dispute.Name</h3>
+                <small class="mr-auto mb-0 pr-3"><i class="fas fa-fw fa-cogs"></i> Resolution method: @Model.Dispute.ResolutionMethod</small>
+                <small class="mr-auto mb-0 pr-3"><i class="fas fa-fw fa-heartbeat"></i> Status: @Model.Dispute.Status.GetDisplayName()</small>
+            </div>
+            <div>
+
+            </div>
+            @if (TempData["IsMediator"].Equals(true))
+            {
+                <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#dispute-modal"><i class="fas fa-fw fa-edit"></i> Edit</button>
+            }
+        </div>
+
+
+        <hr />
+
+        <div>
+            <div class="row bs-wizard  mb-2">
+                <div class="col-4 bs-wizard-step @(Model.Dispute.Status.Equals(DisputeStatus.SettingUp) ? "active" : "complete")">
+                    <div class="text-center bs-wizard-stepnum">Step 1</div>
+                    <div class="progress">
+                        <div class="progress-bar"></div>
+                    </div>
+                    <div class="bs-wizard-dot"></div>
+                    <div class="bs-wizard-info text-center">Initializing procedure</div>
+                </div>
+
+                <div class="col-4 bs-wizard-step @(Model.Dispute.Status.Equals(DisputeStatus.Bidding) ? "active" : Model.Dispute.Status.Equals(DisputeStatus.Finalizing) ? "complete" : "disabled")">
+                    <div class="text-center bs-wizard-stepnum">Step 2</div>
+                    <div class="progress">
+                        <div class="progress-bar"></div>
+                    </div>
+                    <div class="bs-wizard-dot"></div>
+                    <div class="bs-wizard-info text-center">Getting agents' preferences</div>
+                </div>
+
+                <div class="col-4 bs-wizard-step @(Model.Dispute.Status.Equals(DisputeStatus.Finalizing) ? "active" : "disabled")">
+                    <div class="text-center bs-wizard-stepnum">Step 3</div>
+                    <div class="progress">
+                        <div class="progress-bar"></div>
+                    </div>
+                    <div class="bs-wizard-dot"></div>
+                    <div class="bs-wizard-info text-center">Evaluating solution</div>
+                </div>
+
+            </div>
+
+            @if (TempData["ErrorShareSum"] != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading"><i class="fas fa-fw fa-exclamation"></i> Error!</h4>
+                    <p>@TempData["ErrorShareSum"]</p>
+                    <hr>
+                    <a href="@ManageDisputeNavPages.AgentsPageUrl(Model.Dispute)" class="btn btn-primary btn-sm" role="button" aria-pressed="true"><i class="fas fa-fw fa-edit"></i> Manage agents</a>
+                </div>
+            }
+            else
+            {
+
+                @*ALERTS FOR SETTING PHASE*@
+                @if (Model.Dispute.Status.Equals(DisputeStatus.SettingUp) && TempData["IsMediator"].Equals(true))
+                {
+                    @if ((int)ViewData["AgentsCount"] >= 2 && (int)ViewData["GoodsCount"] >= 2)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            <h4 class="alert-heading"><i class="fas fa-fw fa-check-square"></i> Well done!</h4>
+                            <p>When you want, you can invite agents to express their preferences.</p>
+                            <hr>
+                            <form class="form-inline" method="post">
+                                <button type="submit" asp-page-handler="StartBidding" class="btn btn-primary"><i class="fas fa-fw fa-paper-plane"></i>Invite agents</button>
+                            </form>
+                        </div>
+                    }
+                }
+            }
+
+
+            @*ALERTS FOR BIDDING PHASE*@
+            @if (Model.Dispute.Status.Equals(DisputeStatus.Bidding) && TempData["IsMediator"].Equals(true))
+            {
+                @if ((bool)ViewData["AllBid"] != true)
+                {
+                    <div class="alert alert-warning" role="alert">
+                        <h4 class="alert-heading"><i class="fas fa-fw fa-exclamation-triangle"></i> Not yet ready!</h4>
+                        <p>You cannot start the evaluation phase until the all agents have finished the bidding phase.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-success" role="alert">
+                        <h4 class="alert-heading"><i class="fas fa-fw fa-check-square"></i> Well done!</h4>
+                        <p>When you want, you can start the evaluation phase.</p>
+                        <hr>
+                        <form class="form-inline" method="post">
+                            <button type="submit" asp-page-handler="StartEvaluation" class="btn btn-primary">Evaluate solutions</button>
+                        </form>
+                    </div>
+                }
+            }
+
+        </div>
+
+        <div class="row mt-3 mb-3">
+            <h4><i class="fas fa-fw fa-tachometer-alt"></i> Dashboard</h4>
+            <div class="container">
+                <div class="card-deck mb-3 text-center">
+                    <div class="card mb-1 box-shadow">
+                        <div class="card-header">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h4 class="my-0 font-weight-normal"><i class="fas fa-fw fa-users"></i> Agents</h4>
+                                @if (Model.Dispute.Status.Equals(DisputeStatus.SettingUp) && TempData["IsMediator"].Equals(true))
+                                {
+                                    <a href="@ManageDisputeNavPages.AgentsPageUrl(Model.Dispute)" class="btn btn-outline-primary btn-sm" role="button" aria-pressed="true"><i class="fas fa-fw fa-edit"></i> Manage</a>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">@ViewData["AgentsCount"]</h1>
+                            <p>agents partecipating</p>
+                            @if (Model.Dispute.Status == DisputeStatus.SettingUp)
+                            {
+                                @if ((int)ViewData["AgentsCount"] < 2)
+                                {
+                                    <div class="alert alert-warning" role="alert">
+                                        <h4 class="alert-heading"><i class="fas fa-fw fa-exclamation-triangle"></i> Not yet ready!</h4>
+                                        <p>You cannot start the bidding phase until the number of agents is less than 2.</p>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                    <div class="card mb-1 box-shadow">
+                        <div class="card-header">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h4 class="my-0 font-weight-normal"><i class="fas fa-fw fa-dollar-sign"></i> Goods</h4>
+                                @if (Model.Dispute.Status.Equals(DisputeStatus.SettingUp) && TempData["IsMediator"].Equals(true))
+                                {
+                                    <a href="@ManageDisputeNavPages.GoodsPageUrl(Model.Dispute)" class="btn btn-outline-primary btn-sm" role="button" aria-pressed="true"><i class="fas fa-fw fa-edit"></i> Manage</a>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">@ViewData["GoodsCount"]</h1>
+                            <p>goods contended</p>
+                            @if (Model.Dispute.Status == DisputeStatus.SettingUp)
+                            {
+                                @if ((int)ViewData["GoodsCount"] < 2)
+                                {
+                                    <div class="alert alert-warning" role="alert">
+                                        <h4 class="alert-heading"><i class="fas fa-fw fa-exclamation-triangle"></i> Not yet ready!</h4>
+                                        <p>You cannot start the bidding phase until the number of goods is less than 2.</p>
+                                    </div>
+                                }
+                            }
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+
+
+<div id="dispute-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post">
+                <div class="modal-header">
+                    <h4 class="modal-title"><i class="fas fa-fw fa-edit"></i> Edit dispute</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="Dispute.Name" class="control-label"></label>
+                        <input asp-for="Dispute.Name" class="form-control" />
+                        <span asp-validation-for="Dispute.Name" class="text-danger"></span>
+                    </div>
+                    @if (Model.Dispute.Status.Equals(DisputeStatus.SettingUp))
+                    {
+                        <div class="form-group">
+                            <label asp-for="Dispute.ResolutionMethod" class="control-label"></label>
+                            <select class="browser-default custom-select" asp-for="Dispute.ResolutionMethod"
+                                    asp-items="Html.GetEnumSelectList<DisputeResolutionMethod>()">
+                            </select>
+                            <span asp-validation-for="Dispute.ResolutionMethod" class="text-danger"></span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-group">
+                            <label asp-for="Dispute.ResolutionMethod" class="control-label"></label>
+                            <select class="browser-default custom-select" asp-for="Dispute.ResolutionMethod"
+                                    asp-items="Html.GetEnumSelectList<DisputeResolutionMethod>()" disabled>
+                            </select>
+                            <span asp-validation-for="Dispute.ResolutionMethod" class="text-danger"></span>
+                        </div>
+                    }
+
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success mb-2"><i class="fas fa-fw fa-save"></i> Save</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fas fa-fw fa-undo"></i> Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+}

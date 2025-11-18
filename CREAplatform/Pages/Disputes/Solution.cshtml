@@ -1,0 +1,190 @@
+@page "{id:int}"
+@model CreaProject.Pages.Disputes.SolutionModel
+
+@{
+    ViewData["Title"] = "Solution";
+    ViewData["ActivePage"] = ManageDisputeNavPages.Solution;
+}
+
+<h2>Edit Dispute</h2>
+<h4>Solution</h4>
+<hr/>
+
+<div class="row">
+    <partial name="_DisputeNavLayout"/>
+    <div class="col-md-9">
+
+        <div class="d-flex w-100 justify-content-between">
+            <div>
+                <h3 class="mr-auto mb-0 pr-3">@Model.Dispute.Name</h3>
+                <small class="mr-auto mb-0 pr-3"><i class="fas fa-fw fa-cogs"></i> Resolution method: @Model.Dispute.ResolutionMethod</small>
+                <small class="mr-auto mb-0 pr-3"><i class="fas fa-fw fa-heartbeat"></i> Status: @Model.Dispute.Status.GetDisplayName()</small>
+            </div>
+            <div>
+
+            </div>
+        </div>
+
+
+        <hr />
+
+
+        @if (Model.Dispute.ResolutionMethod.Equals(DisputeResolutionMethod.Ratings))
+        {
+            <table id="solutionTable" class="table">
+                <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Dispute.Agents)
+                    </th>
+                    @foreach (var item in Model.Dispute.Goods)
+                    {
+                        <th>
+                            <div style="text-align: center;" >@Html.DisplayFor(model => item.Name)</div>
+                        </th>
+                    }
+                    
+                </tr>
+                </thead>
+                <tbody>
+                @for (int i=0; i < Model.Dispute.Agents.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            <strong>@Html.Label(Model.Dispute.Agents[i].Name)</strong>
+                        </td>
+                        @for (int j=0; j<Model.Dispute.Goods.Count; j++)
+                        {
+                            <td>
+                                <div style="text-align: center;" >@Html.Label(Decimal.Round((decimal)Model.ProblemVars[i][j].SolutionValue()*100, 2).ToString() + "%")</div>
+                            </td>
+                        }
+
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+        
+        
+        @if (Model.Dispute.ResolutionMethod.Equals(DisputeResolutionMethod.Bids))
+        {
+            <table id="solutionTable" class="table">
+                <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Dispute.Agents)
+                    </th>
+                    @foreach (var item in Model.Dispute.Goods)
+                    {
+                        <th>
+                            <div style="text-align: center;">@Html.DisplayFor(model => item.Name)</div>
+                        </th>
+                    }
+
+                </tr>
+                </thead>
+                <tbody>
+                @for (int i = 0; i < Model.Dispute.Agents.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            <strong>@Html.Label(Model.Dispute.Agents[i].Name)</strong>
+                        </td>
+                        @for (int j = 0; j < Model.Dispute.Goods.Count; j++)
+                        {
+                            <td>
+                                <div style="text-align: center;">@Html.Label(Decimal.Round((decimal) Math.Abs(Math.Round(Model.ResultNash.X[i*Model.Dispute.Goods.Count + j], 2)) * 100, 2).ToString() + "%")</div>
+                            </td>
+                        }
+
+                    </tr>
+                }
+                </tbody>
+            </table>
+
+            <hr />
+            <br />
+            <p>
+                This is an <strong>optimal</strong> solution. In fact, according to your bids, the goods allocation is the following:
+
+                <table id="reportTable" class="table">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Dispute.Goods)
+                            </th>
+                            @foreach (var item in Model.Dispute.Agents)
+                            {
+                                <th>
+                                    <div style="text-align: center;">@Html.DisplayFor(model => item.Name)</div>
+                                </th>
+                            }
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            decimal[] assignedValueSum = { 0M, 0M, 0M };
+                            for (int i = 0; i < Model.Dispute.Goods.Count; i++)
+                            {
+                                var agentBid = (decimal)Model.CurrentAgentUtilities.FirstOrDefault(u => u.GoodId == Model.Dispute.Goods[i].GoodId).Utility;
+                                <tr>
+                                    <td>
+                                        <strong>@Html.Label(Model.Dispute.Goods[i].Name)</strong>
+                                    </td>
+                                    @for (int j = 0; j < Model.Dispute.Agents.Count; j++)
+                                    {
+                                        var assignedPerc = Math.Abs(Math.Round(Model.ResultNash.X[j * Model.Dispute.Goods.Count + i], 2));
+                                        var assignedPerc100 = assignedPerc * 100;
+                                        var assignedValue = (decimal)assignedPerc * agentBid;
+                                        assignedValueSum[j] = assignedValueSum[j] + assignedValue;
+                                        <td style="text-align: center;">
+                                            <text>
+                                                <span>@string.Format("{0:c}", Decimal.Round(assignedValue, 2).ToString())</span>
+                                                <br />
+                                                (@Html.Label(Decimal.Round((decimal)assignedPerc100, 2).ToString() + "%")
+                                                of @Html.Label(string.Format("{0:C}", Decimal.Round(agentBid, 2).ToString())))
+                                            </text>
+                                        </td>
+                                    }
+
+                                </tr>
+                            }
+                        }
+
+                        <tr>
+                            <td>
+                                <strong>Total</strong>
+                            </td>
+                            @for (int i = 0; i < Model.Dispute.Agents.Count; i++)
+                            {
+                                <td style="text-align: center;">
+                                    <strong>@Html.Label(string.Format("{0:C}", Decimal.Round(assignedValueSum[i], 2).ToString()))</strong>
+                                </td>
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+
+
+            </p>
+
+
+
+        }
+
+        
+
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+
+
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

@@ -1,0 +1,291 @@
+@page
+@model CreaProject.Pages.Disputes.IndexModel
+@namespace CreaProject.Pages.Disputes
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2><i class="fas fa-fw fa-gavel"></i> Your disputes index</h2>
+<hr />
+
+<div class="card row mb-3">
+    <div class="card-header">
+        <div class="d-flex my-2 px-2 w-100 justify-content-between">
+            <h3 class="mr-auto mb-0 pr-3"><i class="fas fa-fw fa-user-cog"></i> Your disputes</h3>
+            <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#dispute-modal"><i class="fas fa-fw fa-plus"></i> Create</button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="list-group">
+            @foreach (var item in Model.MyDisputes)
+            {
+                <div class="list-group-item list-group-item-action">
+                    <div>
+                        <div class="d-flex mb-2 w-100 justify-content-between">
+                            <h4>
+                                @if (item.ResolutionMethod.Equals(DisputeResolutionMethod.Bids))
+                                {
+                                    <i class="fas fa-fw fa-dollar-sign"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-fw fa-star"></i>
+                                }
+
+                                @Html.DisplayFor(modelItem => item.Name)
+                            </h4>
+                            <div class="text-muted">
+                                <span class="badge badge-secondary">
+                                    <i class="fas fa-fw fa-heartbeat"></i> @Html.DisplayFor(modelItem => item.Status)
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex w-100 justify-content-between">
+                            <div>
+                                <div class="mb-1">
+                                    <i class="fas fa-fw fa-users"></i> @item.AgentsNameList
+                                </div>
+                                <div class="mb-1">
+                                    <i class="fas fa-fw fa-coins"></i> @item.GoodsNameList
+                                </div>
+                            </div>
+
+                            <div class="text-muted">
+                                @if ((await AuthorizationService.AuthorizeAsync(User, item, DisputeOperations.Update)).Succeeded)
+                                {
+                                    <a role="button" class="btn btn-outline-primary btn-sm" asp-page="./Edit" asp-route-id="@item.DisputeId"><i class="fas fa-fw fa-edit"></i> Edit</a>
+                                }
+
+                                @if ((await AuthorizationService.AuthorizeAsync(User, item, DisputeOperations.Delete)).Succeeded)
+                                {
+                                    <button type="button" class="btn btn-outline-danger btn-sm" data-item-id="@item.DisputeId" data-item-description="@item.Name" data-toggle="modal" data-target="#confirm-delete"><i class="fas fa-fw fa-minus"></i> Delete</button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="card row mb-3">
+    <div class="card-header">
+        <h3 class="mr-auto mb-0 pr-3"><i class="fas fa-fw fa-users"></i> Joined disputes</h3>
+    </div>
+    <div class="card-body">
+        <div class="list-group">
+            @foreach (var item in Model.AgentDisputes)
+            {
+                <div class="list-group-item list-group-item-action">
+                    <div>
+                        <div class="d-flex mb-2 w-100 justify-content-between">
+                            <h4>
+                                @if (item.ResolutionMethod.Equals(DisputeResolutionMethod.Bids))
+                                {
+                                    <i class="fas fa-fw fa-dollar-sign"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-fw fa-star"></i>
+                                }
+
+                                @Html.DisplayFor(modelItem => item.Name)
+                            </h4>
+                        </div>
+
+                        <div class="d-flex w-100 justify-content-between">
+                            <div>
+                                <div class="mb-1">
+                                    <i class="fas fa-fw fa-users"></i> @item.AgentsNameList
+                                </div>
+                                <div class="mb-1">
+                                    <i class="fas fa-fw fa-coins"></i> @item.GoodsNameList
+                                </div>
+                            </div>
+
+                            <div class="text-muted">
+                                @if ((item.Status.CompareTo(DisputeStatus.Bidding) == 0 || item.Status.CompareTo(DisputeStatus.Finalizing) == 0) &&
+                                    (await AuthorizationService.AuthorizeAsync(User, item, DisputeOperations.Bid)).Succeeded)
+                                {
+                                    if (item.ResolutionMethod.Equals(DisputeResolutionMethod.Bids))
+                                    {
+                                        <a role="button" class="btn btn-outline-primary" asp-page="./EditBids" asp-route-id="@item.DisputeId"><i class="fas fa-fw fa-money-bill-alt"></i> Bid</a>
+                                    }
+                                    else if (item.ResolutionMethod.Equals(DisputeResolutionMethod.Ratings))
+                                    {
+                                        <a role="button" class="btn btn-outline-primary" asp-page="./EditRates" asp-route-id="@item.DisputeId"><i class="fas fa-fw fa-star"></i> Rate</a>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    @*<div class="d-flex w-100 justify-content-between">
+                            <h4 class="mb-1">@Html.DisplayFor(modelItem => item.Name)</h4>
+                            <small class="text-muted"><i class="fas fa-fw fa-heartbeat"></i> Status: @Html.DisplayFor(modelItem => item.Status)</small>
+                        </div>
+                        <div class="d-flex w-100 justify-content-between">
+                            <p class="mb-1"><i class="fas fa-fw fa-users"></i> @item.AgentsNameList</p>
+                            <small class="text-muted"><i class="fas fa-fw fa-cogs"></i> Method: @Html.DisplayFor(modelItem => item.ResolutionMethod)</small>
+                        </div>
+
+                        <div class="d-flex w-100 justify-content-between">
+                            <p class="mb-1"><i class="fas fa-fw fa-dollar-sign"></i> @item.GoodsNameList</p>
+                            <div class="text-muted">
+                                @if (@item.Status.CompareTo(DisputeStatus.Bidding) == 0 &&
+                                 (await AuthorizationService.AuthorizeAsync(User, item, DisputeOperations.Bid)).Succeeded)
+                                {
+                                    if (item.ResolutionMethod.Equals(DisputeResolutionMethod.Bids))
+                                    {
+                                        <a role="button" class="btn btn-outline-primary" asp-page="./EditBids" asp-route-id="@item.DisputeId"><i class="fas fa-fw fa-money-bill-alt"></i> Bid</a>
+                                    }
+                                    else if (item.ResolutionMethod.Equals(DisputeResolutionMethod.Ratings))
+                                    {
+                                        <a role="button" class="btn btn-outline-primary" asp-page="./EditRates" asp-route-id="@item.DisputeId"><i class="fas fa-fw fa-star"></i> Rate</a>
+                                    }
+                                }
+                            </div>
+                        </div>*@
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+<div id="dispute-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post">
+                <div class="modal-header">
+                    <h4 class="modal-title">Add new dispute</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Dispute.DisputeId" value="0" />
+                    <div class="form-group">
+                        <label asp-for="Dispute.Name" class="control-label"></label>
+                        <input asp-for="Dispute.Name" class="form-control" />
+                        <span asp-validation-for="Dispute.Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label asp-for="Dispute.ResolutionMethod" class="control-label"></label>
+                            <select id="resolutionMethod" class="browser-default custom-select" asp-for="Dispute.ResolutionMethod"
+                                    asp-items="Html.GetEnumSelectList<DisputeResolutionMethod>()" onchange="ShowHideDiv">
+                            </select>
+                            <span asp-validation-for="Dispute.ResolutionMethod" class="text-danger"></span>
+                        </div>
+                        <div id="BoundsPercentageDiv" class="form-group col-6">
+                            <label asp-for="Dispute.BoundsPercentage" class="control-label"></label>
+                            <div id="BoundsPercentageDiv" class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">
+                                        0% <text>&lt;</text>
+                                    </span>
+                                </div>
+                                <input asp-for="Dispute.BoundsPercentage" class="form-control" value="25" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text">
+                                        <text>&le;</text> 25%
+                                    </span>
+                                </div>
+                            </div>
+                            <span asp-validation-for="Dispute.BoundsPercentage" class="text-danger"></span>
+                        </div>
+
+                        <div id="RatingWeightDiv" class="form-group col-6">
+                            <label asp-for="Dispute.RatingWeight" class="control-label"></label>
+                            <div id="BoundsPercentageDiv" class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">
+                                        0% <text>&lt;</text>
+                                    </span>
+                                </div>
+                                <input asp-for="Dispute.RatingWeight" class="form-control" value="10" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text">
+                                        <text>&le;</text> 25%
+                                    </span>
+                                </div>
+                            </div>
+                            <span asp-validation-for="Dispute.RatingWeight" class="text-danger"></span>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" asp-page-handler="CreateDispute" class="btn btn-success"><i class="fas fa-fw fa-save"></i> Create</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fas fa-fw fa-undo"></i>Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="confirm-delete" class="modal fade">
+    <div class="modal-dialog modal-confirm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><i class="fas fa-fw fa-question-circle"></i>Are you sure?</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Do you really want to delete the dispute "
+                    <strong>
+                        <span class="description"></span>
+                    </strong>"?
+                    <br />Also related Agents and Goods will be deleted!
+                    <br />This process cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <form method="post">
+                    <input type="hidden" asp-for="RemoveDisputeId" value="0" />
+                    <button type="submit" asp-page-handler="DeleteDispute" class="btn btn-danger"><i class="fas fa-fw fa-trash"></i> Delete</button>
+                    <button type="button" class="btn btn-info" data-dismiss="modal"><i class="fas fa-fw fa-undo"></i> Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+        $('#confirm-delete').on('show.bs.modal', function (e) {
+            var data = $(e.relatedTarget).data();
+            $('.description', this).text(data.itemDescription);
+            $('#RemoveDisputeId', this).val('' + data.itemId + '');
+        });
+
+
+        $(document).ready(function () {
+            $('#BoundsPercentageDiv').hide();
+            $('#resolutionMethod').change(function () {
+                var drmValue = $(this).val();
+
+
+                if (drmValue == 0) {
+                    // show time div, hide fromTo div
+                    $('#RatingWeightDiv').show();
+                    $('#BoundsPercentageDiv').hide();
+                }
+                else if (drmValue == 1) {
+                    // show fromTo div, hide time div
+                    $('#BoundsPercentageDiv').show();
+                    $('#RatingWeightDiv').hide();
+                }
+            });
+        });
+
+    </script>
+}

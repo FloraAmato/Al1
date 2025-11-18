@@ -1,0 +1,163 @@
+@page "{id:int}"
+@model CreaProject.Pages.Disputes.EditAgentsModel
+@{
+    ViewData["Title"] = "Edit dispute agents";
+    ViewData["ActivePage"] = ManageDisputeNavPages.Agents;
+    ViewData["DisputeId"] = Model.Dispute.DisputeId;
+}
+
+<h2>Edit Dispute</h2>
+<h4>Agents</h4>
+<hr/>
+
+<div class="row">
+    <partial name="_DisputeNavLayout"/>
+    <div class="col-md-9">
+        <div class="card row">
+            <div class="card-header">
+                <div class="d-flex w-100 justify-content-between">
+                    <h4 class="mr-auto mb-0 pr-3"><i class="fas fa-fw fa-users"></i> Dispute agents</h4>
+                    @if (Model.Dispute.Status.Equals(DisputeStatus.SettingUp) && TempData["IsMediator"].Equals(true))
+                    {
+                        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#agent-modal"><i class="fas fa-fw fa-plus"></i> Create</button>
+                    }
+                </div>
+            </div>
+
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>
+                            Full name
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Dispute.Agents[0].Email)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Dispute.Agents[0].ShareOfEntitlement)
+                        </th>
+
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @for (var i = 0; i < Model.Dispute.Agents.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => Model.Dispute.Agents[i].Name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => Model.Dispute.Agents[i].Email)
+                            </td>
+                            <td>
+                                <text>@String.Format("{0:0.00}", Model.Dispute.Agents[i].ShareOfEntitlement) %</text>
+                            </td>
+                            <td>
+                                @if (TempData["IsMediator"].Equals(true) &&
+                                     Model.Dispute.Status.Equals(DisputeStatus.SettingUp))
+                                {
+                                    <button type="button" class="btn btn-outline-danger btn-sm" data-item-id="@Model.Dispute.Agents[i].AgentId" data-item-description="@Model.Dispute.Agents[i].Name" data-toggle="modal" data-target="#confirm-delete"><i class="fas fa-fw fa-minus"></i> Delete</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+        <div>
+            <a asp-page="./Index">Back to List</a>
+        </div>
+    </div>
+</div>
+
+
+<div id="agent-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST">
+                <div class="modal-header">
+                    <h4 class="modal-title"><i class="fas fa-fw fa-user"></i> Add new agent</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="All"></div>
+                    <div class="form-row align-items-start">
+                        <div class="col-12 my-2">
+                            <label asp-for="Agent.Email"></label>
+                            <input asp-for="Agent.Email" type="text" class="form-control" />
+                            <span asp-validation-for="Agent.Email"></span>
+                        </div>
+                        <div class="form-group col-12 my-2">
+                            <label asp-for="Agent.ShareOfEntitlement" class="control-label"></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">
+                                        0% <text>&lt;</text>
+                                    </span>
+                                </div>
+                                <input asp-for="Agent.ShareOfEntitlement" class="form-control col-5" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text">
+                                        <text>&lt;</text> 100%
+                                    </span>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">Leave empty if it is equally divided among the agents</small>
+                            <span asp-validation-for="Agent.ShareOfEntitlement" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" asp-page-handler="AddAgent" class="btn btn-success"><i class="fas fa-fw fa-save"></i> Create</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fas fa-fw fa-undo"></i> Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="confirm-delete" class="modal fade">
+    <div class="modal-dialog modal-confirm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><i class="fas fa-fw fa-question-circle"></i> Are you sure?</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Do you really want to delete the agent "
+                    <strong>
+                        <span class="description"></span>
+                    </strong>"?
+                    <br/>This process cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <form method="post">
+                    <input type="hidden" asp-for="RemoveAgentId" value="0"/>
+                    <input type="hidden" asp-for="Dispute.DisputeId" value="@Model.Dispute.DisputeId"/>
+                    <button type="submit" asp-page-handler="RemoveAgent" class="btn btn-danger"><i class="fas fa-fw fa-trash"></i> Delete</button>
+                    <button type="button" class="btn btn-info" data-dismiss="modal"><i class="fas fa-fw fa-undo"></i> Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+
+        $('#confirm-delete').on('show.bs.modal', function (e) {
+            var data = $(e.relatedTarget).data();
+            $('.description', this).text(data.itemDescription);
+            $('#RemoveAgentId', this).val('' + data.itemId + '');
+        });
+    </script>
+}
