@@ -1,0 +1,181 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Profile";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+}
+
+<div class="flex h-full w-full flex-col items-center justify-center">
+    <div class="flex w-3/5 flex-col items-center rounded-2xl p-12 shadow-xl">
+        <h2 class="mb-8 self-start text-2xl font-bold">Profile Details</h2>
+        <form id="profile-form" class="flex w-full flex-col px-6" method="post" asp-page-handler="SaveDetails">
+            <div class="mb-8 flex w-full items-center justify-between">
+                <label asp-for="Details.Surname" class="form-label mr-4 font-medium"></label>
+                <input asp-for="Details.Surname" required type="text" class="disabled-input-form profile-input w-4/5 font-medium" disabled />
+            </div>
+            <span asp-validation-for="Details.Surname" class="text-red-500"></span>
+            <div class="mb-8 flex w-full items-center justify-between">
+                <label asp-for="Details.Name" class="form-label mr-4 font-medium"></label>
+                <input asp-for="Details.Name" required type="text" class="disabled-input-form profile-input w-4/5 font-medium" disabled />
+            </div>
+            <span asp-validation-for="Details.Name" class="text-red-500"></span>
+            <div class="mb-8 flex w-full items-center justify-between">
+                <label asp-for="Details.Email" class="form-label mr-4 font-medium"></label>
+                <input asp-for="Details.Email" required type="email" class="disabled-input-form profile-input w-4/5 font-medium" disabled />
+            </div>
+            <span asp-validation-for="Details.Email" class="text-red-500"></span>
+            <div class="mb-8 flex w-full items-center justify-between">
+                <label asp-for="Details.PhoneNumber" class="form-label mr-4 font-medium"></label>
+                <input asp-for="Details.PhoneNumber" type="tel" class="disabled-input-form profile-input w-4/5 font-medium" disabled />
+            </div>
+            <span asp-validation-for="Details.PhoneNumber" class="text-red-500"></span>
+
+            <button id="edit-profil-button" class="outlined-button w-[120px] self-end" onclick="toggleProfileForm(event)">Edit</button>
+        </form>
+    </div>
+
+    <div class="mt-6 flex w-3/5 flex-col items-center rounded-2xl p-12 shadow-xl">
+        <h2 class="mb-8 self-start text-2xl font-bold">Password</h2>
+        <form id="password-form" class="flex w-full flex-col px-6" method="post" asp-page-handler="SavePassword">
+            <div class="mb-8 flex w-full items-center justify-between" id="locked-password">
+                <label class="form-label mr-4 font-medium">Password</label>
+                <input  type="password" value="bonjouuur" class="password-input disabled-input-form w-4/5 font-medium" disabled />
+            </div>
+            <div class="password-fields mb-8 hidden w-full items-center justify-between">
+                <label asp-for="Password.CurrentPassword" class="form-label mr-4 font-medium"></label>
+                <input asp-for="Password.CurrentPassword" type="password" class="password-input disabled-input-form w-4/5 font-medium" disabled />
+            </div>
+            <span asp-validation-for="Password.CurrentPassword" class="text-red-500"></span>
+            <div class="password-fields mb-8 hidden w-full items-center justify-between">
+                <label asp-for="Password.NewPassword" class="form-label mr-4 font-medium"></label>
+                <input asp-for="Password.NewPassword" type="password" class="password-input disabled-input-form w-4/5 font-medium" disabled />
+            </div>
+            <span asp-validation-for="Password.NewPassword" class="password-fields hidden text-red-500"></span>
+            <div class="password-fields mb-8 hidden w-full items-center justify-between">
+                <label asp-for="Password.ConfirmPassword" class="form-label mr-4 font-medium"></label>
+                <input asp-for="Password.ConfirmPassword" type="password" class="password-input disabled-input-form w-4/5 font-medium" disabled />
+            </div>
+            <span asp-validation-for="Password.ConfirmPassword" class="password-fields hidden text-red-500"></span>
+            <button id="edit-password-button" class="outlined-button w-[200px] self-end" onclick="togglePasswordForm(event)">Change password</button>
+        </form>
+    </div>
+
+    <div class="mt-6 flex w-3/5 flex-col items-center rounded-2xl p-12 shadow-xl">
+        <h2 class="mb-8 self-start text-2xl font-bold">Account</h2>
+        <div class="flex w-full flex-col">
+            @if (Model.CanDelete)
+            {
+                <button id="edit-button" class="outlined-button-danger w-[168px] self-end" onclick="confirm_delete_modal.showModal()">Delete account</button>
+            }
+            else
+            {
+                <div class="tooltip self-end" data-tip="You cannot delete your account during an on-going dispute">
+                    <button class="disabled-button w-[168px] self-end" disabled>Delete</button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <dialog id="confirm_delete_modal" class="modal">
+        <div class="modal-box flex flex-col items-center bg-white px-14">
+            <div class="flex w-full justify-center">
+                <h2 class="max-w-[344px] mt-6 text-center text-xl font-bold">Are you sure you want to delete your account ?</h2>
+                <form method="dialog">
+                    <button class="absolute right-4 top-4 border-none">
+                        <i class="fa-solid fa-xmark fa-sm text-teal-400"></i>
+                    </button>
+                </form>
+            </div>
+            <p class="mb-10 mt-2 text-center">
+                The account will be deleted permanently.
+                <br />
+                You can't undo this action or recover this information.
+            </p>
+            <div class="flex w-full justify-center">
+                <form id="delete-form" class="modal-backdrop flex w-full justify-center px-6" method="post" asp-page-handler="DeleteAccount">
+                    <button class="outlined-button w-[126px]">Cancel</button>
+                    <button class="button w-[126px] ml-4" type="submit">Delete</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+    @if (!String.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <script type="text/javascript">
+            $.toast({
+                heading: 'Success',
+                text: '@Model.StatusMessage',
+                showHideTransition: 'slide',
+                icon: 'success'
+            })
+        </script>
+    }
+}
+
+<script>
+    const toggleProfileForm = (event) => {
+        event.preventDefault()
+        const form = document.getElementById('profile-form');
+        const inputs = form.getElementsByClassName('profile-input');
+        const button = document.getElementById('edit-profil-button');
+
+        if (button.textContent === 'Edit') {
+            Array.from(inputs).forEach(input => {
+                input.disabled = false;
+                input.classList.add('editable-input-form')
+            });
+            button.textContent = 'Save';
+            button.type = 'submit';
+        } else {
+            form.submit()
+            button.textContent = 'Edit';
+            button.type = 'button';
+            Array.from(inputs).forEach(input => {
+                input.disabled = true;
+                input.classList.remove('editable-input-form')
+            });
+        }
+    }
+
+    const togglePasswordForm = (event) => {
+        event.preventDefault()
+        const form = document.getElementById('password-form');
+        const inputs = form.getElementsByClassName('password-input');
+        const passwordFields = form.getElementsByClassName('password-fields');
+        const button = document.getElementById('edit-password-button');
+        const lockedPassword = document.getElementById('locked-password');
+
+        if (button.textContent === 'Change password') {
+            lockedPassword.classList.remove('flex');
+            lockedPassword.classList.add('hidden');
+            Array.from(inputs).forEach(input => {
+                input.disabled = false;
+                input.classList.add('editable-input-form');
+            });
+            Array.from(passwordFields).forEach(field => {
+                field.classList.remove('hidden');
+                field.classList.add('flex');
+            });
+            button.textContent = 'Save';
+            button.type = 'submit';
+        } else {
+            form.submit()
+            lockedPassword.classList.add('flex');
+            lockedPassword.classList.remove('hidden');
+            button.textContent = 'Change password';
+            button.type = 'button';
+            Array.from(inputs).forEach(input => {
+                input.disabled = true;
+                input.classList.remove('editable-input-form');
+            });
+            Array.from(passwordFields).forEach(field => {
+                field.classList.add('hidden');
+                field.classList.remove('flex');
+            });
+        }
+    }
+</script>

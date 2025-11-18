@@ -1,0 +1,56 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Login form";
+}
+
+
+<div class="flex grow flex-col items-center justify-center">
+    <div class="max-w-[560px] mt-6 flex w-2/5 shadow-xl rounded-2xl">
+        <section class="w-full">
+            <form id="account" method="post" class="flex flex-col items-center justify-center p-16">
+                <h1 class="mb-8 text-2xl font-bold">@ViewData["Title"]</h1>
+                <div asp-validation-summary="ModelOnly" class="text-orange-500" role="alert"></div>
+                <div class="form-field mb-4">
+                    <label asp-for="Input.Email" class="form-label">Email <span class="text-red-500">*</span></label>
+                    <input asp-for="Input.Email" class="input-form" autocomplete="username" aria-required="true" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+                <div class="form-field">
+                    <label asp-for="Input.Password" class="form-label">Password <span class="text-red-500">*</span></label>
+                    <input asp-for="Input.Password" class="input-form" autocomplete="current-password" aria-required="true" />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+                <div class="flex w-full justify-end">
+                    <p class="mb-3 text-teal-400 underline">
+                        <a id="forgot-password" asp-page="./ForgotPassword">Forgot password?</a>
+                    </p>
+                </div>
+                <div class="form-field flex w-full justify-start">
+                    <label asp-for="Input.RememberMe" class="text-base font-medium">
+                        <input asp-for="Input.RememberMe" />
+                        @Html.DisplayNameFor(m => m.Input.RememberMe)
+                    </label>
+                </div>
+                <div>
+                    <button id="login-submit" type="submit" class="button w-[126px] mt-8">Login</button>
+                </div>
+
+            </form>
+        </section>
+    </div>
+    <div class="my-6">
+        <section>
+            <div>
+                <p class="text-sm font-medium">
+                    Don't have an account ? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="text-teal-400 underline">Create your account now</a>
+                </p>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

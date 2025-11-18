@@ -1,0 +1,51 @@
+﻿@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Register form";
+}
+
+<div class="flex h-full w-full flex-col items-center justify-center">
+    <div class="max-w-[560px] my-6 flex w-2/5 rounded-2xl shadow-xl">
+        <form class="flex w-full flex-col items-center justify-center p-16" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <h1 class="mb-8 text-2xl font-bold">@ViewData["Title"]</h1>
+            <div asp-validation-summary="All" class="text-red-500"></div>
+
+            <div class="form-field">
+                <label asp-for="Input.Surname" class="form-label">Last name <span class="text-red-500">*</span></label>
+                <input asp-for="Input.Surname" class="input-form" />
+                <span asp-validation-for="Input.Surname" class="text-danger"></span>
+            </div>
+            <div class="form-field">
+                <label asp-for="Input.Name" class="form-label">First name <span class="text-red-500">*</span></label>
+                <input asp-for="Input.Name" class="input-form" />
+                <span asp-validation-for="Input.Name" class="text-danger"></span>
+            </div>
+            <div class="form-field">
+                <label asp-for="Input.Email" class="form-label">Email <span class="text-red-500">*</span></label>
+                <input asp-for="Input.Email" class="input-form" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+            <div class="form-field">
+                <label asp-for="Input.Password" class="form-label">Password <span class="text-red-500">*</span></label>
+                <input asp-for="Input.Password" class="input-form" />
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+            <div class="form-field">
+                <label asp-for="Input.ConfirmPassword" class="form-label">Confirm password <span class="text-red-500">*</span></label>
+                <input asp-for="Input.ConfirmPassword" class="input-form" />
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+            <label class="my-4 text-sm font-medium">
+                <input type="checkbox" asp-for="Input.PrivacyPolicy" />
+                I accept terms & conditions <a href="/LegalTerms" class="text-teal-400 underline">View terms</a>
+                <span asp-validation-for="Input.PrivacyPolicy" class="text-danger"></span>
+            </label>
+            <br />
+            <button type="submit" class="button w-[126px]">Register</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}
