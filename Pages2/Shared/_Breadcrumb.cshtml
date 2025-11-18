@@ -1,0 +1,63 @@
+﻿@model List<CreaProject.Models.BreadcrumbStep>
+
+@{
+    int stepNumber = 1;
+}
+
+<nav aria-label="steps" class="w-full">
+    <ol class="steps min-h-[40px] flex items-center justify-around">
+        @foreach (var step in Model)
+        {
+            string stepClass = step.State switch
+            {
+                BreadcrumbState.Inactive => "step-item",
+                BreadcrumbState.Ongoing => "step-item step-ongoing",
+                BreadcrumbState.Completed => "step-item step-complete",
+                BreadcrumbState.Rejected => "step-item step-rejected",
+                _ => "step-item"
+            };
+
+            string circleClass = step.State switch
+            {
+                BreadcrumbState.Inactive => "circle-inactive",
+                BreadcrumbState.Ongoing => "circle-ongoing",
+                BreadcrumbState.Completed => "circle-active",
+                _ => "circle-inactive"
+            };
+
+            string lineClass = step.State switch
+            {
+                BreadcrumbState.Inactive => "line-inactive",
+                BreadcrumbState.Ongoing => "line-ongoing",
+                BreadcrumbState.Completed => "line-active",
+                _ => "line-inactive"
+            };
+
+            <li class="@stepClass">
+                <div class="breadcrumb-line flex items-center">
+                    <div class="@circleClass step-circle">
+                        @if (step.State == BreadcrumbState.Completed)
+                        {
+                            <i class="fa-solid fa-check fa-sm"></i>
+                        }
+                    </div>
+                    <div class="@lineClass step-line"></div>
+                </div>
+                <div class="step-label">
+                    @if (step.State is BreadcrumbState.Ongoing or BreadcrumbState.Completed)
+                    {
+                        <a href="@step.Url" class="text-[9px] block text-gray-300">ETAPE @stepNumber</a>
+                        <a href="@step.Url" class="block text-xs font-semibold text-black">@step.Title</a>
+                    }
+                    else
+                    {
+                        <span class="text-[9px] block text-gray-300">ETAPE @stepNumber</span>
+                        <span class="block text-xs font-semibold text-gray-300">@step.Title</span>
+                    }
+                </div>
+            </li>
+
+            stepNumber++;
+        }
+    </ol>
+</nav>

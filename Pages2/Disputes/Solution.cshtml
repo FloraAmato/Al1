@@ -1,0 +1,247 @@
+@page "{DisputeId?}"
+@using System.Globalization
+@using CreaProject.Helpers
+@model CreaProject.Pages.Disputes.SolutionModel
+@using CreaProject.Areas.Identity.Data
+@inject UserManager<CreaUser> UserManager
+
+@{
+    ViewData["Title"] = "Solution";
+    ViewData["ActivePage"] = ManageDisputeNavPages.Solution;
+    CultureInfo currentCulture = CultureInfo.CreateSpecificCulture("fr-FR");
+    CreaUser user = await UserManager.GetUserAsync(User);
+    Agent currentAgent = Model.Dispute.Agents.FirstOrDefault(a => a.CreaUserId == user.Id);
+}
+
+<div class="flex h-full w-full flex-col items-center justify-center mt-14">
+    <div class="flex w-4/5 justify-center mb-6">
+        @Html.Partial("_Breadcrumb", BreadcrumbHelper.GetBreadcrumbSteps(Model.Dispute.Status, Model.Dispute.DisputeId))
+    </div>
+    <div class="h-2/3 w-4/5 flex justify-center mb-10">
+        <div class="w-1/2 h-full flex-col flex mr-4">
+            <h1 class="text-2xl mb-2">@Model.Dispute.Name</h1>
+            <p class="mb-2">Resolution method : @Model.Dispute.ResolutionMethod</p>
+            <p class="text-xs">This is an optimal solution.<br />The total goods allocation is computed according to your bids</p>
+            <div class="flex-col flex w-full mt-8">
+                @foreach (Agent agent in Model.Dispute.Agents)
+                {
+                    <div class="h-[48px] min-h-[48px] mb-4 flex w-4/5 items-center justify-between rounded-2xl bg-white px-6 py-3 shadow-xl">
+                        <p>@agent.Name</p>
+                        <div class="flex h-full items-center">
+                            @switch (@agent.Validated)
+                            {
+                                case ValidatedSteps.Agreement:
+                                    <i class="fa-solid fa-circle-check fa-lg text-creablue"></i>
+                                    break;
+                                case ValidatedSteps.Disagreement:
+                                    <i class="fa-solid fa-circle-minus fa-lg text-red-600"></i>
+                                    break;
+                                default:
+                                    <i class="fa-solid fa-circle-check fa-lg text-gray-300"></i>
+                                    break;
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="w-1/2 min-w-[700px] h-full flex shadow-xl rounded-2xl flex-col ml-4 p-6 mt-20">
+
+            <div class="overflow-y-auto w-full p-4">
+                <form method="post" asp-page-handler="Accept" id="dispute-solution">
+                    @if (Model.Dispute.ResolutionMethod.Equals(DisputeResolutionMethod.Ratings))
+                    {
+                        @for (int i = 0; i < Model.Dispute.Agents.Count; i++)
+                        {
+                            decimal[] assignedValueSum = [0M, 0M, 0M];
+
+                            <div class="flex card shadow-xl bg-white mb-4 px-8 py-4">
+                                <p>@Model.Dispute.Agents[i].Name</p>
+                                <hr class="mx[-14px] mt-2" />
+                                <table>
+                                    <thead class="h-[50px]">
+                                        <tr>
+                                            <th></th>
+                                            <th>Test @(Model.Dispute.ResolutionMethod == DisputeResolutionMethod.Ratings ? "Ratings" : "Bids")</th>
+                                            <th>Good value</th>
+                                            <th>Result</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int j = 0; j < Model.Dispute.Goods.Count; j++)
+                                        {
+                                            decimal assignedValue = decimal.Round(Model.Dispute.Goods[j].EstimatedValue * (decimal)Model.ProblemVars[i][j].SolutionValue(), 2);
+                                            assignedValueSum[i] += assignedValue;
+                                            <tr>
+                                                <td>
+                                                    <div>@Model.Dispute.Goods[j].Name</div>
+                                                </td>
+                                                <td>
+                                                    <div class="text-center">@Html.Label(decimal.Round((decimal)Model.ProblemVars[i][j].SolutionValue() * 100, 2) + "%")</div>
+                                                </td>
+                                                <td>
+                                                    <div class="text-center">
+                                                        @Model.Dispute.Goods[j].EstimatedValue.ToString("C", currentCulture)
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="text-center">
+                                                        @decimal.Round(Model.Dispute.Goods[j].EstimatedValue * (decimal)Model.ProblemVars[i][j].SolutionValue(), 2).ToString("C", currentCulture)
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot class="h-[60px]">
+                                        <tr>
+                                            <th></th>
+                                            <th></th>
+                                            <th>Total goods allocation</th>
+                                            <td class="text-center">
+                                                <strong>@Html.Label(decimal.Round(assignedValueSum[i], 2).ToString("C", currentCulture))</strong>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        }
+                    }
+                    @if (Model.Dispute.ResolutionMethod.Equals(DisputeResolutionMethod.Bids))
+                    {
+                        @for (int i = 0; i < Model.Dispute.Agents.Count; i++)
+                        {
+                            decimal[] assignedValueSum = [0M, 0M, 0M];
+
+                            <div class="flex card shadow-xl bg-white mb-4 p-4">
+                                <p>@Model.Dispute.Agents[i].Name</p>
+                                <hr />
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Test @(Model.Dispute.ResolutionMethod == DisputeResolutionMethod.Ratings ? "Ratings" : "Bids")</th>
+                                            <th>Good value</th>
+                                            <th>Result</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int j = 0; j < Model.Dispute.Goods.Count; j++)
+                                        {
+                                            decimal agentBid = Model.CurrentAgentUtilities.FirstOrDefault(u => u.GoodId == Model.Dispute.Goods[j].GoodId).Utility;
+                                            double assignedPerc = Math.Abs(Math.Round(Model.ResultNash.X[i * Model.Dispute.Goods.Count + j], 2));
+                                            double assignedPerc100 = assignedPerc * 100;
+                                            decimal assignedValue = (decimal)assignedPerc * agentBid;
+                                            assignedValueSum[i] += assignedValue;
+                                            <tr>
+                                                <td>
+                                                    <div class="text-center">@Html.Label(Decimal.Round((decimal)Math.Abs(Math.Round(Model.ResultNash.X[i * Model.Dispute.Goods.Count + j], 2)) * 100, 2).ToString() + "%")</div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot class="h-[60px]">
+                                        <tr>
+                                            <th></th>
+                                            <th></th>
+                                            <th>Total goods allocation</th>
+                                            <td>
+                                                <div class="text-center">
+                                                    @assignedValueSum[i].ToString("C0", currentCulture);
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        }
+                    }
+                </form>
+                <div>
+                    @if (currentAgent.Validated == ValidatedSteps.Agreement || currentAgent.Validated == ValidatedSteps.Disagreement)
+                    {
+                        <div class="self-end">
+                            @if (Model.IsFullyValidated)
+                            {//chain.scan2project.org/blockchain_store/v1/entries?filter[entryid]=c40b45a8-4fb0-4982-a00b-96f703a0664e
+                                <a target="_blank" href="@(Model.BlockchainUrl + "/explorer/v1/entries?filter%5Bentryid%5D=" + Model.Dispute.BlockId)">
+                                <button class="button">Show agreement certificate</button>
+                                </a>
+                            }
+                            else
+                            {
+                                <div class="tooltip" style="padding-left:2rem !important" data-tip="To download agreement certificate, all agents must agree with the solution">
+                                    <button class="disabled-button">Download agreement certificate</button>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="flex justify-between mt-12">
+                            <div class="flex w-full justify-end">
+                                <button class="outlined-button w-[126px]" onclick="reject_solution_warning.showModal()">I disagree</button>
+                                <button class="button ml-2 w-[126px]" onclick="confirm_solution_warning.showModal()">I agree</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<dialog id="confirm_solution_warning" class="modal">
+    <div class="modal-box bg-white px-16">
+        <div class="mb-10 flex">
+            <h3 class="text-lg font-bold">Are you sure you want to <span class="text-creablue">agree</span> with the proposed solution ?</h3>
+            <form method="dialog">
+                <button class="absolute right-4 top-4 border-none">
+                    <i class="fa-solid fa-xmark fa-sm text-creablue"></i>
+                </button>
+            </form>
+        </div>
+        <div class="mb-10">
+            <form id="confirm-solution" method="post" class="w-5/6" asp-page-handler="ConfirmSolution">
+                <input type="hidden" name="disputeId" value="@Model.Dispute.DisputeId" />
+            </form>
+            <p>Once confirmed, you will not be able to change your decision.</p>
+        </div>
+        <div class="flex items-center justify-center">
+            <form method="dialog">
+                <button class="outlined-button w-[128px] h-[36px]">Cancel</button>
+                <button class="button w-[176px] h-[36px]" type="submit" form="confirm-solution">Confirm agreement</button>
+            </form>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="reject_solution_warning" class="modal">
+    <div class="modal-box bg-white px-16">
+        <div class="mb-10 flex">
+            <h3 class="text-lg font-bold">Are you sure you want to <span class="text-red-700">disagree</span> with the proposed solution ?</h3>
+            <form method="dialog">
+                <button class="absolute right-4 top-4 border-none">
+                    <i class="fa-solid fa-xmark fa-sm text-creablue"></i>
+                </button>
+            </form>
+        </div>
+        <div class="mb-10">
+            <form id="reject-solution" method="post" class="w-5/6" asp-page-handler="RejectSolution">
+                <input type="hidden" name="disputeId" value="@Model.Dispute.DisputeId" />
+            </form>
+            <p>Once confirmed, you will not be able to change your decision.</p>
+        </div>
+        <div class="flex items-center justify-center">
+            <form method="dialog">
+                <button class="outlined-button w-[128px] h-[36px]">Cancel</button>
+                <button class="button w-[220px] h-[36px]" type="submit" form="reject-solution">Confirm disagreement</button>
+            </form>
+        </div>
+    </div>
+</dialog>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

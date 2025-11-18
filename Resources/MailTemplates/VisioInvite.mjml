@@ -1,0 +1,17 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>Hello {name},</mj-text>
+        <mj-text>{creatorUserName} asks for a visio-conference to discuss the dispute called {disputeName}.</mj-text>
+        <mj-text>Please click the link bellow in order to join the visio-conferencing system.</mj-text>
+        <mj-divider>
+
+        </mj-divider>
+        <mj-button href="{callbackUrl}">
+          Access the visio-conference
+        </mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

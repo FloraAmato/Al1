@@ -1,0 +1,22 @@
+﻿@page
+@using CreaProject.Areas.Identity.Data
+@model IndexModel
+@inject SignInManager<CreaUser> SignInManager
+@{
+    ViewData["Title"] = "Home page";
+}
+<div class="flex grow">
+    <div class="flex w-1/2 flex-col items-center justify-center">
+        <div class="text-left">
+            <h1 class="text-6xl font-bold text-creablue">CREA<br />PROJECT</h1>
+            <h2 class="text-center text-xl text-slate-800">Conflict resolution with equitative algorithms</h2>
+        </div>
+    </div>
+    <div class="flex w-1/2 justify-center bg-orange-50">
+        <div class="flex flex-col items-center justify-center">
+            <img src="~/img/icon.svg" alt="CREA2 Logo" class="mt-4 h-auto max-h-full w-auto" />
+            <h1 class="text-7xl font-bold tracking-wide">CREA3</h1>
+            <h2 class="mb-16 text-xl font-bold">Conflict Resolution with Equitative Algorithms</h2>
+        </div>
+    </div>
+</div>

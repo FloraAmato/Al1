@@ -1,0 +1,13 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>Hello Crea2 contact!</mj-text>
+        <mj-text>You received a new message from {username} ({email})</mj-text>
+        <mj-text>
+          <i>{message}</i>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

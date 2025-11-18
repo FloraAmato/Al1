@@ -1,0 +1,56 @@
+﻿@page
+@model CreaProject.Pages.ContactModel
+@{
+}
+
+<div class="flex w-full flex-col items-center @(Model.MailSent ? "opacity-20" : "")" id="contact-page">
+    <section class="mt-6 w-2/5 shadow-xl">
+        <form id="contact" method="post" class="flex flex-col items-center justify-center p-16" asp-page-handler="Contact">
+            <div class="form-field mb-4">
+                <label asp-for="Input.Name" class="form-label">Name <span class="text-red-500">*</span></label>
+                <input asp-for="Input.Name" class="input-form" aria-required="true" />
+                <span asp-validation-for="Input.Name" class="text-red-500"></span>
+            </div>
+            <div class="form-field mb-4">
+                <label asp-for="Input.Email" class="form-label">Email <span class="text-red-500">*</span></label>
+                <input asp-for="Input.Email" class="input-form" autocomplete="username" aria-required="true" />
+                <span asp-validation-for="Input.Email" class="text-red-500"></span>
+            </div>
+            <div class="form-field mb-4">
+                <label asp-for="Input.Message" class="form-label">Comment or message <span class="text-red-500">*</span></label>
+                <textarea asp-for="Input.Message" class="input-form" aria-required="true" rows="5"></textarea>
+                <span asp-validation-for="Input.Message" class="text-red-500"></span>
+            </div>
+            <div> 
+                <button id="contact-submit" type="submit" class="button w-[126px] mt-8">Submit</button>
+            </div>
+        </form>
+    </section>
+</div>
+
+@if (Model.MailSent)
+{
+    <div class="z-10 absolute left-0 top-0 flex h-full w-full items-center justify-center bg-transparent" id="contact-modal">
+        <div class="flex w-1/3 flex-col items-center justify-center rounded-2xl bg-white shadow-xl">
+            <i class="fa-solid fa-xmark fa-lg m-8 self-end text-teal-400 hover:cursor-pointer" id="close-contact-modal"></i>
+            <i class="fa-solid fa-circle-check fa-2xl mb-10 text-teal-400"></i>
+            <h1 class="mb-4 text-xl font-bold">
+                Message submitted !
+            </h1>
+            <p class="mb-16">Your message has been sent successfully</p>
+        </div>
+    </div>
+}
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+            const closeCrossEl = document.getElementById('close-contact-modal');
+            const forgotPasswordModal = document.getElementById('contact-modal');
+            const forgotPasswordPage = document.getElementById('contact-page');
+
+            closeCrossEl.onclick = () => {
+                forgotPasswordModal.classList.add('hidden');
+                forgotPasswordPage.classList.remove('opacity-20');
+            }
+    });
+</script>

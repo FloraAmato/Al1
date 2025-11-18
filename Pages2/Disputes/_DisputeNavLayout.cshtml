@@ -1,0 +1,9 @@
+﻿@model DisputeBasePageModel
+@using System.Globalization
+@using CreaProject.Helpers
+
+<div class="flex h-full w-full flex-col items-center justify-center mt-14">
+    <div class="flex w-4/5 justify-center mb-6">
+        @Html.Partial("_Breadcrumb", BreadcrumbHelper.GetBreadcrumbSteps(Model.Dispute.Status, Model.Dispute.DisputeId))
+    </div>
+</div>

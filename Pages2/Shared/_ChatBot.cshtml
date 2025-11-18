@@ -1,0 +1,224 @@
+﻿@using CreaProject.Areas.Identity.Data
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Configuration
+@inject UserManager<CreaUser> UserManager
+@inject SignInManager<CreaUser> SignInManager
+@inject ApplicationDbContext Context
+@inject IConfiguration Configuration
+
+@{
+    string apiUrl = Configuration["LegiBotUrl"];
+    string apiKey = Configuration["LegiBotSecret"];
+}
+
+@if (SignInManager.IsSignedIn(User))
+{
+    CreaUser user = await UserManager.GetUserAsync(User);
+    Conversation conversation = await Context.Conversations.FirstOrDefaultAsync(c => c.UserId == user.Id);
+    if (conversation == null)
+    {
+        conversation = new Conversation()
+        {
+            User = user,
+            UserId = user.Id,
+            SessionId = Guid.NewGuid().ToString()
+        };
+        Context.Conversations.Add(conversation);
+        await Context.SaveChangesAsync();
+    }
+    string conversationId = conversation?.ConversationId.ToString();
+
+    <div class="z-50">
+        <div class="flex flex-col chatbox-normal items-center hidden shadow-xl rounded-xl p-6 bg-white mx-8" id="chatbox" data-firstname="@user.Surname" data-lastname="@user.Name" data-conversation-id="@(conversationId ?? "")">
+            <div class="self-end mb-6">
+                <button onclick="expandChatBox()">
+                    <i class="fa-solid fa-up-right-and-down-left-from-center text-creablue"></i>
+                </button>
+                <button class="ml-2" onclick="toggleChatBox()">
+                    <i class="fa-solid fa-xmark text-creablue"></i>
+                </button>
+            </div>
+            <div class="flex flex-col overflow-scroll grow w-full h-full" id="chatbox-messages"></div>
+            <hr class=" my-6"/>
+            <div class="flex w-full items-center">
+                <input class="bg-creablue bg-opacity-15 h-[31px] rounded-md grow px-2" id="user-message-input" placeholder="Enter your message..."/>
+                <button onclick="sendMessage()">
+                    <i class="fa-solid fa-paper-plane text-creablue ml-4"></i>
+                </button>
+            </div>
+        </div>
+        <button class="w-[404px] h-[62px] bg-white shadow-xl flex justify-between items-center rounded-xl mx-8 px-8" id="chatbox-button" onclick="toggleChatBox()">
+            <div class="bg-creablue bg-opacity-15 w-4/5 h-[31px] rounded-md"></div>
+            <i class="fa-solid fa-message text-creablue"></i>
+        </button>
+    </div>
+}
+
+
+<script>
+    let conversation;
+    const apiUrl = "@apiUrl";
+    const apiKey = "@apiKey";
+    const chatboxDiv = document.getElementById('chatbox');
+    const firstName = chatboxDiv.getAttribute('data-firstname');
+    const lastName = chatboxDiv.getAttribute('data-lastname');
+    const userName = firstName + ' ' + lastName;
+    const conversationId = chatboxDiv.getAttribute('data-conversation-id');
+    let loadingMessageId;
+
+    const appendMessage = (sender, message, timestamp) => {
+        const chatbox = document.getElementById('chatbox-messages');
+        const messageDiv = document.createElement('div');
+        const messageDate = formatDate(timestamp);
+        messageDiv.className = `chat ${sender === 'user' ? 'chat-end' : 'chat-start'}`;
+        messageDiv.innerHTML = `
+            <div class='chat-header'>
+                ${sender === 'user' ? userName : 'legiBot'}
+            </div>
+            <div class="chat-bubble ${sender === 'user' ? 'bg-creablue' : 'bg-creablue bg-opacity-15'}" style="${sender === 'user' ? 'color: white;' : 'color: #2CAFB4;'}">
+                ${message}
+            </div>
+            <div class="chat-footer">
+                ${messageDate}
+            </div>
+        `;
+        chatbox.appendChild(messageDiv);
+    }
+
+    const toggleChatBox = () => {
+        const chatbox = document.getElementById('chatbox');
+        const chatboxButton = document.getElementById('chatbox-button');
+        if (chatbox.classList.contains("hidden")) {
+            chatbox.classList.remove("hidden");
+            chatboxButton.classList.add("hidden");
+        } else {
+            chatbox.classList.add("hidden");
+            chatboxButton.classList.remove("hidden");
+        }
+    };
+
+    const expandChatBox = () => {
+        const chatbox = document.getElementById('chatbox');
+        if (chatbox.classList.contains("chatbox-normal")) {
+            chatbox.classList.remove("chatbox-normal");
+            chatbox.classList.add("chatbox-expanded");
+        } else if (chatbox.classList.contains("chatbox-expanded")) {
+            chatbox.classList.remove("chatbox-expanded");
+            chatbox.classList.add("chatbox-normal");
+        }
+    };
+
+    const sanitizeInput = (input) => {
+        const element = document.createElement('div');
+        element.innerText = input;
+        return element.innerHTML;
+    };
+    
+    const formatDate = (timestamp) => {
+        const date = new Date(timestamp);
+        
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        
+        return `${hours}:${minutes} - ${day}/${month}/${year}`;
+    }
+
+    const sendMessage = async () => {
+        try {
+            let userMessage = document.getElementById('user-message-input').value;
+            userMessage = sanitizeInput(userMessage);
+            if (userMessage.trim() === '') return;
+            const sendMessageTimestamp = Date.now();
+            appendMessage("user", userMessage, sendMessageTimestamp);
+
+            loadingMessageId = appendLoadingMessage();
+
+            conversation.push(
+                {
+                    "sender": "user",
+                    "message": userMessage,
+                    "timestamp": sendMessageTimestamp
+                });
+            localStorage.setItem("myLegiBotConversation", JSON.stringify(conversation));
+
+            document.getElementById('user-message-input').value = "";
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'api-key': apiKey
+                },
+                body: JSON.stringify({
+                    input: userMessage,
+                    session_id: conversationId
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch response from the chatbot API");
+            }
+
+            const data = await response.json();
+            const responseMessageTimestamp = Date.now();
+            replaceLoadingMessage(loadingMessageId, data.answer);
+            conversation.push(
+                {
+                    "sender": "legiBot",
+                    "message": data.answer,
+                    "timestamp": responseMessageTimestamp
+                }
+            );
+            localStorage.setItem("myLegiBotConversation", JSON.stringify(conversation));
+        } catch (e) {
+            console.error("Error : ", e);
+            replaceLoadingMessage(loadingMessageId, "Sorry, something went wrong. Please try again later.");
+        }
+    }
+
+    const appendLoadingMessage = () => {
+        const chatbox = document.getElementById('chatbox-messages');
+        const messageDiv = document.createElement('div');
+        const loadingMessageId = `loading-${Date.now()}`;
+        const messageDate = formatDate(Date.now());
+
+        messageDiv.id = loadingMessageId;
+        messageDiv.className = 'chat chat-start';
+        messageDiv.innerHTML = `
+            <div class='chat-header'>
+                legiBot
+            </div>
+            <div class="chat-bubble bg-creablue bg-opacity-15" style="color: #2CAFB4;">
+                <i class="flex justify-center">
+                    <span class="loading loading-dots loading-xs mt-2"></span>
+                </i>
+            </div>
+            <div class="chat-footer">
+                ${messageDate}
+            </div>
+        `;
+
+        chatbox.appendChild(messageDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+
+        return loadingMessageId;
+    };
+
+    const replaceLoadingMessage = (messageId, newMessage) => {
+        const messageDiv = document.getElementById(messageId);
+        if (messageDiv) {
+            messageDiv.querySelector('.chat-bubble').textContent = newMessage;
+        }
+    };
+
+    (() => {
+        conversation = JSON.parse(localStorage.getItem("myLegiBotConversation")) || [];
+
+        conversation.forEach((message) => {
+            appendMessage(message.sender,  message.message, message.timestamp);
+        });
+    })();
+</script>

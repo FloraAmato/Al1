@@ -1,0 +1,154 @@
+﻿@page
+@model CreaProject.Pages.Disputes.IndexModel
+@namespace CreaProject.Pages.Disputes
+@using CreaProject.Areas.Identity.Data
+@using CreaProject.Helpers
+@inject UserManager<CreaUser> UserManager
+
+@{
+    ViewData["Title"] = "Index";
+    int itemIndex = 1;
+    var currentCulture = System.Globalization.CultureInfo.CurrentCulture.Name;
+    var currentUser = UserManager.GetUserAsync(User).Result;
+}
+
+<div class="flex h-full w-full flex-col p-20">
+    <p>The CREA II project builds on the results of its predecessor, CREA (2017-19). It aims at introducing Artificial Intelligence (AI) driven tools to assist <br/>natural and legal persons in resolving their disputes through the application of innovative game theoretical (GT) algorithms.</p>
+    <div class="mt-10 w-full">
+        @if (Model.MyDisputes.Count() > 0)
+        {
+            <div class="flex justify-between">
+                <h1 class="text-4xl font-bold">Disputes list</h1>
+                <form asp-page-handler="CreateDispute">
+                    <button class="button" type="submit">New dispute</button>
+                </form>
+            </div>
+            <div class="mt-12 flex w-full flex-wrap gap-x-6">
+                @foreach (var dispute in Model.MyDisputes)
+                {
+                    <div class="mb-6 flex flex-col rounded-2xl p-6 shadow-xl" style="width: 48%">
+                        <div class="self-end">
+                            <div class="flex">
+                                @{
+                                    string disputeUrl = dispute.Status switch
+                                    {
+                                        DisputeStatus.SettingUp => $"/Disputes/Create/{dispute.DisputeId}",
+                                        DisputeStatus.Bidding => $"/Disputes/Bids/{dispute.DisputeId}",
+                                        DisputeStatus.Finalizing => $"/Disputes/Solution/{dispute.DisputeId}",
+                                        DisputeStatus.Finalized => $"/Disputes/Solution/{dispute.DisputeId}",
+                                        DisputeStatus.Rejected => $"/Disputes/Solution/{dispute.DisputeId}",
+                                        _ => "/Disputes"
+                                    };
+                                }
+                                <a href="@disputeUrl">
+                                    <button class="mr-4">
+                                        <i class="fa-regular fa-pen-to-square fa-xl text-creablue"></i>
+                                    </button>
+                                </a>
+                                @if (dispute.OwnerId == currentUser.Id)
+                                {
+                                    @if (dispute.Status != DisputeStatus.SettingUp)
+                                    {
+                                        <div class="tooltip" data-tip="You cannot delete the dispute because it is in progress">
+                                            <button disabled>
+                                                <i class="fa-solid fa-trash fa-xl text-gray-300"></i>
+                                            </button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <form method="post" id="delete-dispute-@dispute.DisputeId" asp-page-handler="DeleteDispute">
+                                            <input type="hidden" name="DeleteDisputeId" value="@dispute.DisputeId"/>
+                                            <button data-dispute-name="@dispute.Name" onclick="showDeleteDisputeConfirmation(event, this)">
+                                                <i class="fa-solid fa-trash fa-xl text-creablue"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="tooltip" data-tip="You cannot delete the dispute because you are not the creator of the dispute.">
+                                        <button disabled>
+                                            <i class="fa-solid fa-trash fa-xl text-gray-300"></i>
+                                        </button>
+                                    </div>
+                                }
+
+                            </div>
+                        </div>
+                        @if (dispute.Name != null)
+                        {
+                            <h2 class="text-2xl font-bold">@dispute.Name</h2>
+                        } else
+                        {
+                            <h2 class="text-2xl font-bold">No name dispute</h2>
+                        }
+                        <span class="text-sm font-normal text-gray-300">@Html.DisplayFor(modelItem => dispute.CreatedAt, currentCulture)</span>
+                        <div class="h-[24px] flex items-center">
+                            <i class="fa-solid fa-users fa-sm mr-3"></i>
+                            <div class="flex">
+                                @foreach (var agent in dispute.Agents)
+                                {
+                                    <span class="mr-2">@agent.Name</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="my-6">
+                            @Html.Partial("_Breadcrumb", BreadcrumbHelper.GetBreadcrumbSteps(dispute.Status, dispute.DisputeId))
+                        </div>
+                        <div class="self-end">
+                            @if (dispute.OwnerId == currentUser.Id)
+                            {
+                                <button class="pill-button" disabled>My Dispute</button>
+                            } else
+                            {
+                                <button class="pill-button" disabled>Joined dispute</button>
+                            }
+                        </div>
+                    </div>
+                    itemIndex++;
+                }
+            </div>
+        } else
+        {
+            <h1 class="mb-10 text-4xl font-bold">Disputes list</h1>
+            <form asp-page-handler="CreateDispute">
+                <button type="submit">
+                    <div class="h-[300px] w-[600px] border-2 bg-gray-500/10 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-dashed border-creablue hover:bg-gray-500/20">
+                        <i class="fa-solid fa-plus fa-2xl text-creablue"></i>
+                        <p class="mt-8 font-medium text-creablue">New dispute</p>
+                    </div>
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+<dialog id="delete_dispute_confirmation" class="modal">
+    <div class="modal-box bg-white px-16">
+        <div class="mb-10 flex flex-col text-center">
+            <h2 class="text-lg font-bold">Are you sure you want to delete <span id="dispute-name"></span> ?</h2>
+            <p>The dispute will be deleted permanently.<br />You can't undo this action or recover this information.</p>
+        </div>
+        <div class="modal-action flex items-center justify-center">
+            <form method="dialog">
+                <button class="outlined-button w-[128px] h-[36px] mr-2">Cancel</button>
+                <button class="button w-[128px] h-[36px]" id="confirm-delete" type="submit">Delete</button>
+            </form>
+        </div>
+    </div>
+</dialog>
+
+@section Scripts {
+    <script>
+        const showDeleteDisputeConfirmation = (event, button) => {
+            event.preventDefault();
+            const disputeName = button.getAttribute('data-dispute-name');
+            const disputeId = button.closest('form').id;
+            document.getElementById('dispute-name').innerText = disputeName;
+            const buttonConfirmDelete = document.getElementById('confirm-delete');
+            buttonConfirmDelete.setAttribute("form", disputeId);
+            document.getElementById('delete_dispute_confirmation').showModal();
+        }
+    </script>
+}            

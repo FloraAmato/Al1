@@ -1,0 +1,15 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>Hello {name},</mj-text>
+        <mj-text>You are invited to participate to a dispute on CREA 2. Please click the link below to access the platform.</mj-text>
+        <mj-divider>
+        </mj-divider>
+        <mj-button href="{callbackUrl}">
+          Access the platform
+        </mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

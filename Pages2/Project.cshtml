@@ -1,0 +1,44 @@
+﻿@page
+@model ProjectModel
+@{
+    ViewData["Title"] = "Project";
+}
+<div class="flex grow mt-6 w-4/5 flex-col items-center justify-center">
+    <div class="flex flex-col w-1/2 justify-center">
+        <h2 class="mb-8 text-2xl font-bold">About</h2>
+        <p class="text-justify">
+            The CREA III project builds on the success of the previous CREA project (2017-2019). Its main goal is to use Artificial Intelligence (AI) to help people and organizations resolve disputes. By using advanced AI tools and game theory algorithms, CREA III will offer a new way to settle conflicts.
+            <br/>
+            <br/>
+            The CREA III project leverages advanced Artificial Intelligence (AI) and game theory algorithms to assist individuals and organizations in resolving disputes more effectively. Building on the success of its predecessor, CREA (2017-2019), CREA III introduces innovative solutions to streamline the dispute resolution process.<br />
+            <br />
+        </p>
+        <p class="font-bold text-center my-16">
+            Our mission :<br/>
+            Enhance access to Online Dispute Resolution (ODR) tools, breaking down barriers to justice and enabling more efficient and equitable conflict resolution
+        </p>
+        <p class="text-justify">
+            Key novelties of CREA III :<br/>
+            <br/>
+            <ul class="project-list">
+                <li>
+                    <span class="font-bold">AI-powered dispute resolution:</span> Advanced AI and machine learning help deliver faster and more precise legal solutions.<br/>
+                </li>
+                <li>
+                    <span class="font-bold">Smart contracts with Blockchain:</span> Legally binding agreements are created using secure, decentralized Blockchain technology.<br/>
+                </li>
+                <li>
+                    <span class="font-bold">European Common Ground of Rights (ECGAR):</span> This system bridges the gaps between different legal systems, working with common legal rights across EU countries.<br/>
+                </li>
+            </ul>
+            <br/>
+            The EU users will have access to all the functionalities of this novel approach through a user-friendly Web Interface.<br/>
+            <br/>
+            The project Consortium will also organize 3 workshops – one per planned work – and 5 seminars in every partner’s MS to provide a platform that fosters discussions, exchange and spread of knowledge about these new algorithms through several AI tools and ECGARs. In turn, the results thereof will feed into the work of the project.  The project will involve – as main target groups – a wide range of EU stakeholders, including over 150 lawyers, 30 notaries, 50 mediators, 5 consumer associations, 100 academics, 300 students, 5 legal tech companies, 5 policy makers.
+        </p>
+    </div>
+    <div class="flex w-1/2 flex-col">
+        <h2 class="mb-8 mt-12 text-2xl font-bold">Consortium</h2>
+        @await Html.PartialAsync("_Carousel")
+    </div>
+</div>

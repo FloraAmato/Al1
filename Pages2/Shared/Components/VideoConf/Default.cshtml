@@ -1,0 +1,123 @@
+@model VideoConfViewModel
+
+<button class="h-[62px] w-[324px] bg-white shadow-xl text-creablue rounded-xl px-8 justify-between items-center flex" onclick="visio_modal.showModal()">
+    <i class="fa-solid fa-video text-creablue"></i>
+    <p>Contact Mediator and Agents</p>
+</button>
+
+<dialog class="modal" id="visio_modal">
+    <div class="modal-box bg-white px-16">
+        <div class="mb-10 flex">
+            <h3 class="text-lg font-bold">Video conference</h3>
+            <form method="dialog">
+                <button id="close" class="absolute right-4 top-4 border-none">
+                    <i class="fa-solid fa-xmark fa-sm text-creablue"></i>
+                </button>
+            </form>
+        </div>
+        <form method="post" id="send-invite" asp-controller="Visio" asp-action="SendInvite" target="_blank">
+            <input type="hidden" name="disputeId" value="@Model.DisputeId" />
+            @* asp-page-handler="SendInvite" *@
+            <div class="flex flex-col items-center justify-center">
+                <h4 class="self-start font-medium">Invite Mediator</h4>
+                <p class="self-start text-xs">To assist you in resolving the dispute, we pre-selected a list of certified and renowed mediators.</p>
+                <div class="mt-6">
+                    <ul>
+                        @foreach (Country country in Model.MediatorsPerCountry)
+                        {
+                            <li>
+                                <p>
+                                    <img alt="Belgium" width="24" height="20" style="display:inline; padding-right:7px" 
+                                         src="@("http://purecatamphetamine.github.io/country-flag-icons/3x2/"+country.Code+".svg")" />
+                                    <span>@country.Name</span>
+                                </p>
+                                <ul class="ml-4">
+                                    @foreach (var mediator in country.Mediators)
+                                    {
+                                        <li class="flex items-center mb-2">
+                                            <input type="radio" class="crea-radio" id="mediator_@mediator.email" name="SelectedMediator" value="@mediator.email" />
+                                            <label for="mediator_@mediator.email" class="ml-4">
+                                                <div>
+                                                    <a href="@mediator.linkedInProfile" target="_blank"><p class="underline font-medium">@mediator.name</p></a>
+                                                    <p class="text-xs text-stone-400">@mediator.email</p>
+                                                </div>
+                                            </label>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-10" />
+            <div class="flex flex-col items-center justify-center">
+                <h4 class="self-start font-medium">Invite Agents</h4>
+                <div class="mt-6">
+                    <ul>
+                        @foreach (Agent agent in Model.Agents)
+                        {
+
+                            <li class="flex items-center mb-2">
+                                @if (agent.Validated < ValidatedSteps.Setup)
+                                {
+                                    <input type="checkbox" class="crea-checkbox" id="agent_@(agent.AgentId)" disabled />
+                                    <label for="agent_@(agent.AgentId)" class="ml-4">
+                                        <div class="tooltip" data-tip="You can only contact agents who validated first step">
+                                            @if (agent.CreaUser != null)
+                                            {
+                                                if (string.IsNullOrWhiteSpace(agent.CreaUser.Surname) &&
+                                                string.IsNullOrWhiteSpace(agent.CreaUser.Name))
+                                                {
+                                                    @agent.Email
+                                                }
+                                                else
+                                                {
+                                                    @(agent.CreaUser.Surname
+                                                        + " " + @agent.CreaUser.Name)
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <p class="text-gray-400">@agent.Email</p>
+                                            }
+                                        </div>
+                                    </label>
+                                }
+                                else
+                                {
+                                    <input type="checkbox" class="crea-checkbox" id="agent_@(agent.AgentId)" name="SelectedAgents" value="@agent.Email" />
+                                    <label for="agent_@(agent.AgentId)" class="ml-4">
+                                        @if (agent.CreaUser != null)
+                                        {
+                                            if (string.IsNullOrWhiteSpace(agent.CreaUser.Surname) &&
+                                            string.IsNullOrWhiteSpace(agent.CreaUser.Name))
+                                            {
+                                                @agent.Email
+                                            }
+                                            else
+                                            {
+                                                @(agent.CreaUser.Surname
+                                                +" " + @agent.CreaUser.Name)
+                                            }
+                                        }
+                                        else
+                                        {
+                                            @agent.Email
+                                        }
+                                    </label>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="flex items-center justify-center mt-6">
+                <button type="button" class="outlined-button w-[128px] h-[36px]" onclick="$('#close').click();">Cancel</button>
+                <button class="button w-[128px] h-[36px]" type="submit" @* form="send-invite" *@>Send Invite</button>
+
+            </div>
+        </form>
+
+    </div>
+</dialog>
