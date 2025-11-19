@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: crea-postgres
+    environment:
+      POSTGRES_USER: crea
+      POSTGRES_PASSWORD: crea
+      POSTGRES_DB: crea_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crea"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and Celery broker
+  redis:
+    image: redis:7-alpine
+    container_name: crea-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Qdrant vector database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: crea-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI backend
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../infra/Dockerfile.backend
+    container_name: crea-backend
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://crea:crea@postgres:5432/crea_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - QDRANT_URL=http://qdrant:6333
+      - DEBUG=true
+      - ENVIRONMENT=development
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend/app:/app/app
+      - model_cache:/root/.cache/huggingface
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Celery worker
+  worker:
+    build:
+      context: ../backend
+      dockerfile: ../infra/Dockerfile.backend
+    container_name: crea-worker
+    environment:
+      - DATABASE_URL=postgresql://crea:crea@postgres:5432/crea_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - QDRANT_URL=http://qdrant:6333
+    volumes:
+      - ../backend/app:/app/app
+      - export_data:/app/exports
+    depends_on:
+      - postgres
+      - redis
+      - qdrant
+    command: celery -A app.workers.celery_app worker --loglevel=info
+
+volumes:
+  postgres_data:
+  redis_data:
+  qdrant_data:
+  model_cache:
+  export_data:
