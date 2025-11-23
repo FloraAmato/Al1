@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  langchain:
+    image: crea2/chatbot
+    container_name: langchain_service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - chroma
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+
+  redis:
+    image: redis:latest
+    container_name: redis_service
+    
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: chroma_service
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ALLOW_RESET=TRUE

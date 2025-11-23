@@ -1,0 +1,6 @@
+langchain
+langchain-openai
+langchain-chroma
+fastapi
+chromadb
+redis
