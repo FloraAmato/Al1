@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>Fig. 1 — CREST-NIDS Architecture</title>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#fff;display:flex;justify-content:center;padding:14px 6px}
+.fig{font-family:'Times New Roman','Noto Serif',Georgia,serif;color:#1a1a1a;max-width:470px;width:100%;font-size:7.5px;line-height:1.35}
+.pipe{display:flex;flex-direction:column;align-items:center;gap:0}
+.mod{width:100%;border-left:2.5px solid;border-radius:0;padding:7px 10px 6px;background:#fff}
+.mod-a{border-color:#7B71C4}
+.mod-b{border-color:#1D9E75}
+.mod-c{border-color:#378ADD}
+.mod-d{border-color:#D85A30}
+.mod-head{display:flex;align-items:baseline;gap:6px;margin-bottom:5px}
+.mod-id{font-size:9px;font-weight:700;letter-spacing:.3px}
+.mod-a .mod-id{color:#3C3489}
+.mod-b .mod-id{color:#085041}
+.mod-c .mod-id{color:#0C447C}
+.mod-d .mod-id{color:#993C1D}
+.mod-name{font-size:8px;color:#444;font-style:italic}
+.chain{display:flex;gap:0;align-items:stretch}
+.node{border:0.6px solid #ccc;background:#fafafa;border-radius:2px;padding:2px 5px;text-align:center;font-size:6.8px;line-height:1.25;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.node-t{font-weight:700;font-size:6.8px;color:#333}
+.node-s{font-size:6px;color:#888}
+.sep{width:12px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:7px;flex-shrink:0}
+.sep::after{content:'→'}
+.kb-node{border:0.6px solid #BA7517;background:#FDF8EE;flex:0 0 44px}
+.kb-node .node-t{color:#7A5A10}
+.kb-node .node-s{color:#A08030}
+.arrow-d{text-align:center;padding:2px 0}
+.arrow-d svg{display:block;margin:0 auto}
+.eq-bar{width:100%;padding:5px 10px 4px;border-top:0.4px solid #e0e0e0;background:#f9f9f9}
+.eq-label{font-size:6px;color:#999;font-style:italic;letter-spacing:.2px}
+.eq-math{font-size:8.5px;color:#111;font-weight:700;text-align:center;margin-top:1px}
+.out-row{display:flex;gap:6px;justify-content:center;padding:2px 0}
+.out-box{border:0.6px solid #bbb;border-radius:2px;background:#f5f5f5;padding:2px 10px;font-size:7px;font-weight:700;color:#444}
+.loss-bar{width:100%;border-top:0.6px solid #999;margin-top:3px;padding:7px 10px 5px}
+.loss-head{font-size:8.5px;font-weight:700;color:#222;text-align:center;margin-bottom:5px;letter-spacing:.3px}
+.loss-terms{display:flex;gap:3px;justify-content:center;margin-bottom:5px}
+.loss-chip{border-radius:2px;padding:2.5px 6px;font-size:6.5px;font-weight:700;border:0.5px solid;text-align:center}
+.lc-d{color:#993C1D;border-color:#E8B8A0;background:#FDF5F1}
+.lc-b{color:#085041;border-color:#8DD4B8;background:#F0FAF5}
+.lc-c{color:#0C447C;border-color:#A8CEE8;background:#F0F6FC}
+.loss-plus{color:#ccc;font-size:7px;align-self:center}
+.loss-eq{text-align:center;font-size:9px;font-weight:700;color:#111;margin:4px 0 3px}
+.loss-params{text-align:center;font-size:6px;color:#888;line-height:1.5}
+.legend{display:flex;gap:8px;justify-content:center;padding:4px 0 0;font-size:6px;color:#aaa}
+.legend-dot{width:6px;height:6px;border-radius:1px;display:inline-block;vertical-align:middle;margin-right:2px}
+mjx-container{display:inline!important}
+</style>
+</head><body>
+<div class="fig"><div class="pipe">
+
+<div style="text-align:center;padding:3px 0">
+<span style="border:0.6px solid #bbb;border-radius:2px;background:#f5f5f5;padding:3px 14px;font-size:8px;font-weight:700;color:#333">Input \(\mathbf{x} \in \mathbb{R}^n\)</span>
+</div>
+<div class="arrow-d"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 0 L5 7 M2.5 5 L5 8 L7.5 5" stroke="#bbb" fill="none" stroke-width="0.8"/></svg></div>
+
+<div class="mod mod-a">
+<div class="mod-head"><span class="mod-id">A</span><span class="mod-name">Residual 1D-CNN Encoder</span></div>
+<div class="chain">
+<div class="node"><div class="node-t">Conv1D</div><div class="node-s">1→32</div></div><div class="sep"></div>
+<div class="node"><div class="node-t">ResBlock₁</div><div class="node-s">32→64</div></div><div class="sep"></div>
+<div class="node"><div class="node-t">ResBlock₂</div><div class="node-s">64→128</div></div><div class="sep"></div>
+<div class="node"><div class="node-t">ResBlock₃</div><div class="node-s">128→256</div></div><div class="sep"></div>
+<div class="node"><div class="node-t">Res₄₋₅</div><div class="node-s">256</div></div><div class="sep"></div>
+<div class="node"><div class="node-t">Avg⊕Max</div><div class="node-s">→Proj</div></div>
+</div>
+</div>
+<div class="eq-bar">
+<div class="eq-label">Output embedding</div>
+<div class="eq-math">\(\mathbf{h} = E(\mathbf{x}) \in \mathbb{R}^{128}\)</div>
+</div>
+
+<div class="arrow-d"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 0 L5 7 M2.5 5 L5 8 L7.5 5" stroke="#bbb" fill="none" stroke-width="0.8"/></svg></div>
+
+<div class="mod mod-b">
+<div class="mod-head"><span class="mod-id">B</span><span class="mod-name">Constraint-Field Regularizer</span></div>
+<div class="chain">
+<div class="node kb-node"><div class="node-t">\(\Phi\)</div><div class="node-s">rules</div></div><div class="sep"></div>
+<div class="node"><div class="node-t">Predicate Heads</div><div class="node-s">\(f_P,f_Q\!:\!\mathbb{R}^{128}\!\to\!\mathbb{R}^{64}\)</div></div><div class="sep"></div>
+<div class="node"><div class="node-t">Distance</div><div class="node-s">cosine</div></div><div class="sep"></div>
+<div class="node"><div class="node-t">Energy Gate</div><div class="node-s">\(\max(0,\cdot),\varepsilon_\varphi\)</div></div><div class="sep"></div>
+<div class="node" style="flex:0 0 32px"><div class="node-t">\(E_{\text{tot}}\)</div></div>
+</div>
+</div>
+<div class="eq-bar">
+<div class="eq-label">★ Eq. 1 — Constraint field energy (core contribution)</div>
+<div class="eq-math">\(E_\varphi(\mathbf{x}) = \max\!\big(0,\;\|f_P(\mathbf{h}) - f_Q(\mathbf{h})\|_2 - \varepsilon_\varphi\big)\)</div>
+</div>
+
+<div class="arrow-d"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 0 L5 7 M2.5 5 L5 8 L7.5 5" stroke="#bbb" fill="none" stroke-width="0.8"/></svg></div>
+
+<div class="mod mod-c">
+<div class="mod-head"><span class="mod-id">C</span><span class="mod-name">Binding-Aware Transformer — ×2 layers</span></div>
+<div class="chain">
+<div class="node"><div class="node-t">Concept Gr.</div><div class="node-s">\(K\!=\!32, \tau\!=\!0.1\)</div></div><div class="sep"></div>
+<div class="node" style="flex:1.2"><div class="node-t">Binding Attn</div><div class="node-s">\(Q_r\) roles, \(K_f\!,V_f\) fillers</div></div><div class="sep"></div>
+<div class="node"><div class="node-t">Bottleneck</div><div class="node-s">\(128\!\to\!32\!\to\!128\)</div></div><div class="sep"></div>
+<div class="node" style="flex:0 0 36px"><div class="node-t">LN+FFN</div></div>
+</div>
+</div>
+<div class="eq-bar">
+<div class="eq-label">★ Eq. 5 — Binding attention with role-filler decomposition</div>
+<div class="eq-math">\(\mathrm{Attn}(Q_r, K_f, V_f) = \mathrm{softmax}\!\!\left(\dfrac{Q_r K_f^\top}{\sqrt{d}}\right) V_f\)</div>
+</div>
+
+<div class="arrow-d"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 0 L5 7 M2.5 5 L5 8 L7.5 5" stroke="#bbb" fill="none" stroke-width="0.8"/></svg></div>
+
+<div class="mod mod-d">
+<div class="mod-head"><span class="mod-id">D</span><span class="mod-name">Hierarchical Cosine Classifier + Uncertainty</span></div>
+<div class="chain">
+<div class="node" style="flex:0 0 36px"><div class="node-t">Refine</div><div class="node-s">BN,ReLU</div></div><div class="sep"></div>
+<div class="node"><div class="node-t">Stage 1: Binary</div><div class="node-s">\(p_{\text{atk}}\!=\!\sigma(W_b\mathbf{h})\)</div></div>
+<div class="node"><div class="node-t">Stage 2: Cosine</div><div class="node-s">\(s\!\cdot\!\cos(\hat{\mathbf{h}},\mathbf{w}_c)\)</div></div><div class="sep"></div>
+<div class="node" style="flex:0 0 36px"><div class="node-t">Gate</div><div class="node-s">fuse</div></div><div class="sep"></div>
+<div class="node" style="flex:0 0 36px"><div class="node-t">U(x)</div></div>
+</div>
+</div>
+<div class="eq-bar">
+<div class="eq-label">★ Eq. 6 — Dual-signal uncertainty for open-set recognition</div>
+<div class="eq-math">\(U(\mathbf{x}) = \alpha\, H(\mathbf{x}) + (1 - \alpha)\, E_{\mathrm{sample}}(\mathbf{x})\)</div>
+</div>
+
+<div class="arrow-d"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 0 L5 7 M2.5 5 L5 8 L7.5 5" stroke="#bbb" fill="none" stroke-width="0.8"/></svg></div>
+
+<div class="out-row">
+<div class="out-box">Classification \(\hat{y}\)</div>
+<div class="out-box">OSR flag</div>
+<div class="out-box">Rule explanations</div>
+</div>
+
+<div class="loss-bar">
+<div class="loss-head">★ Training Objective (Eq. 7)</div>
+<div class="loss-terms">
+<div class="loss-chip lc-d">\(\mathcal{L}_{\text{CE}}^{\text{focal}}\)</div>
+<div class="loss-plus">+</div>
+<div class="loss-chip lc-d">\(\tfrac{1}{2}\mathcal{L}_{\text{bin}}\)</div>
+<div class="loss-plus">+</div>
+<div class="loss-chip lc-b">\(\lambda\, w\, E_{\text{total}}\)</div>
+<div class="loss-plus">+</div>
+<div class="loss-chip lc-c">\(\mu\, w\, \mathcal{L}_{\text{bind}}\)</div>
+<div class="loss-plus">+</div>
+<div class="loss-chip lc-c">\(\nu\, \mathcal{L}_{\text{cycle}}\)</div>
+</div>
+<div class="loss-eq">\[\boxed{\;\mathcal{L} = \mathcal{L}_{\text{CE}}^{\text{focal}} + \tfrac{1}{2}\,\mathcal{L}_{\text{bin}} + \lambda\, w(t)\, E_{\text{total}} + \mu\, w(t)\, \mathcal{L}_{\text{bind}} + \nu\, \mathcal{L}_{\text{cycle}}\;}\]</div>
+<div class="loss-params">
+\(w(t) = \min(1,\, t/T_w)\) &nbsp;·&nbsp; \(\lambda=5\) &nbsp;·&nbsp; \(\mu=0.001\) &nbsp;·&nbsp; \(\nu=0.05\) &nbsp;·&nbsp; \(T_w=3\) &nbsp;·&nbsp; \(\gamma=2\) &nbsp;·&nbsp; \(\alpha=0.7\) &nbsp;·&nbsp; label smooth. \(0.1\)<br>
+Adam \(10^{-3} \to 10^{-5}\) cosine anneal &nbsp;·&nbsp; patience 10 on val macro-F1 &nbsp;·&nbsp; batch 512 &nbsp;·&nbsp; ~1.4M parameters
+</div>
+</div>
+
+<div class="legend">
+<span><span class="legend-dot" style="background:#7B71C4"></span>Encoder (A)</span>
+<span><span class="legend-dot" style="background:#1D9E75"></span>Constraint (B)</span>
+<span><span class="legend-dot" style="background:#378ADD"></span>Transformer (C)</span>
+<span><span class="legend-dot" style="background:#D85A30"></span>Classifier (D)</span>
+<span><span class="legend-dot" style="background:#BA7517"></span>KB</span>
+<span style="color:#bbb">|</span>
+<span>★ = key equations</span>
+</div>
+
+</div></div>
+</body></html>
